@@ -1,0 +1,149 @@
+:root {
+  --border-color: #dddddd;
+  --highlight-color: rgb(28, 165, 39);
+  --background-color: #fafafa;
+}
+
+html {
+  font-family: Avenir, sans-serif;
+  background-color: var(--background-color);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.sidebar {
+  float: left;
+  width: 20%;
+  padding: 1em;
+}
+
+.content {
+  float: left;
+  width: 80%;
+  padding: 1em;
+  border-left: 1px solid var(--border-color);
+}
+
+.channel-name {
+  display: flex;
+  padding: 0.5em 0;
+}
+
+.channel-name > span {
+  flex: 1;
+}
+
+input[type=text] {
+  width: "100%";
+}
+
+button, input[type=submit] {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 0.5em;
+}
+
+button:hover, input[type=submit]:hover {
+  background-color: var(--border-color);
+  cursor: pointer;
+}
+
+/* Thumbnails */
+
+#video-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#video-list > div {
+  flex: 1;
+  max-width: 50%;
+  min-width: 30%;
+  min-width: 100px;
+}
+
+.video-thumbnail {
+
+  padding: 15px;
+}
+
+.video-thumbnail:hover {
+  cursor: pointer;
+}
+
+.video-thumbnail > img {
+  width: 100%;
+}
+
+.video-thumbnail.seen > img {
+  filter: brightness(50%) grayscale(50%);
+}
+
+.video-thumbnail > h2 {
+  font-size: 1em;
+}
+
+.video-thumbnail > h3 {
+  font-size: 1em;
+}
+
+.video-thumbnail > span {
+  font-size: 0.8em;
+}
+
+/* Video Player */
+
+#video-player {
+  position: absolute;
+  /* display: flex;
+  flex-direction: column; */
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.aspect-ratio {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 51%;
+}
+
+.aspect-ratio iframe {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0; top: 0;
+}
+
+.stop-scrolling {
+  height: 100%;
+  overflow: hidden;
+}
+
+.blurred {
+  filter: blur(10px);
+}
+
+#video-player > button {
+  text-align: center;
+  padding: 15px;
+  margin: 5px 5px 0px 0px;
+  background-color: rgba(0, 0, 0, 0.8);
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1em;
+  border-radius: 3px;
+  min-width: 20%;
+}
+
+.error-msg {
+  font-style: italic;
+}
