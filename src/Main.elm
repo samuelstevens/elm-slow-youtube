@@ -183,7 +183,7 @@ subscriptions model =
             Sub.none
 
         Just _ ->
-            Time.every 2000 ClearError
+            Time.every 5000 ClearError
 
 
 
