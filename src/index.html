@@ -16,12 +16,16 @@
 		const storedData = localStorage.getItem('elm-slow-youtube-state');
 		const flags = storedData ? JSON.parse(storedData) : null;
 
+		console.log(flags);
+
+		if (!flags["apiKey"]) {
+			const API_KEY = prompt("Enter your API key:")
+			flags["apiKey"] = API_KEY;
+		}
+
 		const app = Elm.Main.init({ node: document.getElementById('myapp'), flags: flags });
 
-		console.log(app);
-
 		app.ports.setStorage.subscribe(function (state) {
-			console.log(state);
 			localStorage.setItem('elm-slow-youtube-state', JSON.stringify(state));
 		});
 	</script>
