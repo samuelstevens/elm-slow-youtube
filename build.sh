@@ -1,8 +1,8 @@
 #!/bin/bash
 
-mkdir -p build
-cp src/index.html build/
-sed -i '' 's/debug/build/' build/index.html # changes main.debug.js to main.build.js
-cp src/main.css build/
+mkdir -p docs
+cp src/index.html docs/
+sed -i '' 's/debug/build/' docs/index.html # changes main.debug.js to main.build.js
+cp src/main.css docs/
 
-elm make src/Main.elm --optimize --output=build/main.build.js
+elm make src/Main.elm --optimize --output=docs/main.build.js
