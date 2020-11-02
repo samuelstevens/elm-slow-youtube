@@ -3,6 +3,7 @@ port module Main exposing (Model, Msg(..), Video, channelVideos, init, main, upd
 import Array exposing (get)
 import Browser
 import Browser.Dom
+import Channel exposing (Channel)
 import Env exposing (apiKey)
 import Html exposing (Html, aside, button, div, form, h1, h2, h3, iframe, img, input, main_, span)
 import Html.Attributes exposing (attribute, class, id, name, placeholder, src, type_, value)
@@ -14,8 +15,8 @@ import Json.Encode as E
 import Task
 import Time
 import Url
-import Url.Builder as B
-import Url.Parser as P exposing ((</>), Parser)
+import Url.Builder
+import Url.Parser exposing ((</>))
 
 
 
@@ -46,13 +47,6 @@ type alias Video =
     }
 
 
-type alias Channel =
-    { id : String
-    , title : String
-    , uploadPlaylistId : String
-    }
-
-
 type alias Model =
     { videos : List Video
     , currentVideo : Maybe Video
@@ -69,8 +63,8 @@ decodeFlags flags =
         Ok model ->
             model
 
-        Err _ ->
-            { channels = [], videos = [], newChannelUrl = "", errorMsg = Nothing, currentVideo = Nothing, seenVideos = [] }
+        Err err ->
+            { channels = [], videos = [], newChannelUrl = "", errorMsg = Just (D.errorToString err), currentVideo = Nothing, seenVideos = [] }
 
 
 init : E.Value -> ( Model, Cmd Msg )
@@ -97,6 +91,7 @@ type Msg
     | FinishVideo Video
     | LoadedChannelInfo (Result Http.Error Channel)
     | LoadedChannelVideos (Result Http.Error (List Video))
+    | LoadedChannelId (Result Http.Error Channel.Id)
     | Scroll (Result Browser.Dom.Error ())
     | ClearError Time.Posix
 
@@ -105,14 +100,18 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         AddChannel ->
-            case urlToChannelId model.newChannelUrl of
+            case Channel.parseChannelUrl model.newChannelUrl of
                 Nothing ->
                     ( { model | newChannelUrl = "", errorMsg = Just ("'" ++ model.newChannelUrl ++ "' isn't a valid YouTube URL.") }
                     , Cmd.none
                     )
 
-                Just url ->
-                    ( { model | newChannelUrl = "" }, getChannelInfo url )
+                -- need to send a request to get the channel id
+                Just (Channel.DisplayName name) ->
+                    ( { model | newChannelUrl = "" }, getChannelId name )
+
+                Just (Channel.ChannelId id) ->
+                    ( { model | newChannelUrl = "" }, getChannelInfo (Channel.Id id) )
 
         UpdateNewChannel newChannelUrl ->
             ( { model | newChannelUrl = newChannelUrl }, Cmd.none )
@@ -134,13 +133,21 @@ update msg model =
             , Cmd.none
             )
 
+        LoadedChannelId result ->
+            case result of
+                Ok id ->
+                    ( model, getChannelInfo id )
+
+                Err err ->
+                    ( { model | errorMsg = Just (httpErrorToString err) }, Cmd.none )
+
         LoadedChannelVideos result ->
             case result of
                 Ok videos ->
                     ( { model | videos = model.videos ++ videos }, Cmd.none )
 
-                Err _ ->
-                    ( model, Cmd.none )
+                Err err ->
+                    ( { model | errorMsg = Just (httpErrorToString err) }, Cmd.none )
 
         LoadedChannelInfo result ->
             case result of
@@ -151,8 +158,8 @@ update msg model =
                     else
                         ( { model | channels = List.filter (\c -> c.id /= channel.id) model.channels ++ [ channel ] }, getChannelVideos channel )
 
-                Err _ ->
-                    ( model, Cmd.none )
+                Err err ->
+                    ( { model | errorMsg = Just (httpErrorToString err) }, Cmd.none )
 
         Scroll _ ->
             ( model, Cmd.none )
@@ -176,30 +183,46 @@ subscriptions model =
 
 
 
--- HTTP
+-- URL
 
 
-buildChannelUrl : String -> String
-buildChannelUrl channelId =
-    B.crossOrigin
+buildSearchUrl : String -> String
+buildSearchUrl displayName =
+    Url.Builder.crossOrigin
+        "https://www.googleapis.com"
+        [ "youtube", "v3", "search" ]
+        [ Url.Builder.string "part" "snippet"
+        , Url.Builder.string "q" displayName
+        , Url.Builder.string "type" "channel"
+        , Url.Builder.string "key" apiKey
+        ]
+
+
+buildChannelUrl : Channel.Id -> String
+buildChannelUrl (Channel.Id id) =
+    Url.Builder.crossOrigin
         "https://www.googleapis.com"
         [ "youtube", "v3", "channels" ]
-        [ B.string "part" "contentDetails,snippet"
-        , B.string "id" channelId
-        , B.string "key" apiKey
+        [ Url.Builder.string "part" "contentDetails,snippet"
+        , Url.Builder.string "id" id
+        , Url.Builder.string "key" apiKey
         ]
 
 
 buildPlaylistUrl : String -> String
 buildPlaylistUrl playlistId =
-    B.crossOrigin
+    Url.Builder.crossOrigin
         "https://www.googleapis.com"
         [ "youtube", "v3", "playlistItems" ]
-        [ B.string "part" "snippet"
-        , B.string "playlistId" playlistId
-        , B.string "key" apiKey
-        , B.int "maxResults" 3
+        [ Url.Builder.string "part" "snippet"
+        , Url.Builder.string "playlistId" playlistId
+        , Url.Builder.string "key" apiKey
+        , Url.Builder.int "maxResults" 3
         ]
+
+
+
+-- HTTP
 
 
 getChannelVideos : Channel -> Cmd Msg
@@ -208,6 +231,41 @@ getChannelVideos channel =
         { url = buildPlaylistUrl channel.uploadPlaylistId
         , expect = Http.expectJson LoadedChannelVideos (videoListDecoder channel)
         }
+
+
+getChannelInfo : Channel.Id -> Cmd Msg
+getChannelInfo id =
+    Http.get
+        { url = buildChannelUrl id
+        , expect = Http.expectJson LoadedChannelInfo (channelDecoder id)
+        }
+
+
+getChannelId : String -> Cmd Msg
+getChannelId displayName =
+    Http.get
+        { url = buildSearchUrl displayName
+        , expect = Http.expectJson LoadedChannelId searchDecoder
+        }
+
+
+httpErrorToString : Http.Error -> String
+httpErrorToString err =
+    case err of
+        Http.BadUrl msg ->
+            msg
+
+        Http.Timeout ->
+            "request timed out"
+
+        Http.NetworkError ->
+            "network error"
+
+        Http.BadStatus status ->
+            "status code " ++ String.fromInt status
+
+        Http.BadBody msg ->
+            msg
 
 
 publishDecoder : D.Decoder Time.Posix
@@ -250,29 +308,26 @@ videoListDecoder channel =
     D.field "items" (D.list (videoDecoder channel))
 
 
-getChannelInfo : String -> Cmd Msg
-getChannelInfo channelId =
-    Http.get
-        { url = buildChannelUrl channelId
-        , expect = Http.expectJson LoadedChannelInfo (channelDecoder channelId)
-        }
-
-
 channelTitleDecoder : D.Decoder String
 channelTitleDecoder =
-    D.field "items" (D.index 0 (D.at [ "snippet", "title" ] D.string))
+    D.field "items" <| D.index 0 <| D.at [ "snippet", "title" ] D.string
 
 
 uploadPlaylistIdDecoder : D.Decoder String
 uploadPlaylistIdDecoder =
-    D.field "items" (D.index 0 (D.at [ "contentDetails", "relatedPlaylists", "uploads" ] D.string))
+    D.field "items" <| D.index 0 <| D.at [ "contentDetails", "relatedPlaylists", "uploads" ] D.string
 
 
-channelDecoder : String -> D.Decoder Channel
+channelDecoder : Channel.Id -> D.Decoder Channel
 channelDecoder id =
     D.map2 (Channel id)
         channelTitleDecoder
         uploadPlaylistIdDecoder
+
+
+searchDecoder : D.Decoder Channel.Id
+searchDecoder =
+    D.field "items" <| D.map Channel.Id <| D.index 0 <| D.at [ "id", "channelId" ] D.string
 
 
 
@@ -299,8 +354,12 @@ updateWithStorage msg prevModel =
 
 encodeChannel : Channel -> E.Value
 encodeChannel channel =
+    let
+        (Channel.Id id) =
+            channel.id
+    in
     E.object
-        [ ( "id", E.string channel.id )
+        [ ( "id", E.string id )
         , ( "title", E.string channel.title )
         , ( "uploadPlaylistId", E.string channel.uploadPlaylistId )
         ]
@@ -322,7 +381,7 @@ encodeModel model =
 channelStorageDecoder : D.Decoder Channel
 channelStorageDecoder =
     D.map3 Channel
-        (D.field "id" D.string)
+        (D.map Channel.Id <| D.field "id" D.string)
         (D.field "title" D.string)
         (D.field "uploadPlaylistId" D.string)
 
@@ -350,7 +409,7 @@ view model =
                 , div
                     [ id "channel-list" ]
                     (model.channels
-                        |> List.sortBy .title
+                        |> List.sortBy (.title >> String.toLower)
                         |> List.map viewChannel
                     )
                 , form [ onSubmit AddChannel ]
@@ -373,7 +432,7 @@ view model =
                 , div [ id "video-list" ]
                     (List.map
                         (viewChannelColumn model.videos model.seenVideos)
-                        (List.sortBy .title model.channels)
+                        (List.sortBy (.title >> String.toLower) model.channels)
                     )
                 ]
             ]
@@ -520,21 +579,7 @@ viewChannelColumn allVideos seenVideoIds channel =
 
 
 
--- URL
-
-
-channelParser : Parser (String -> a) a
-channelParser =
-    P.s "channel" </> P.string
-
-
-urlToChannelId : String -> Maybe String
-urlToChannelId string =
-    Url.fromString string
-        |> Maybe.andThen (P.parse channelParser)
-
-
-
+--
 -- DOM
 
 
