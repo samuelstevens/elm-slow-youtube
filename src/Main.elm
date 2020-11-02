@@ -11,6 +11,7 @@ import Http
 import Iso8601
 import Json.Decode as D
 import Json.Encode as E
+import Set exposing (Set)
 import Task
 import Time
 import Url
@@ -43,6 +44,7 @@ type alias Video =
     , thumbnailUrl : String
     , title : String
     , description : String
+    , seen : Bool
     }
 
 
@@ -52,7 +54,7 @@ type alias Model =
     , newChannelUrl : String
     , errorMsg : Maybe String
     , channels : List Channel
-    , seenVideos : List String
+    , seenVideos : Set String
     , apiKey : String
     }
 
@@ -64,7 +66,7 @@ decodeFlags flags =
             model
 
         Err err ->
-            { channels = [], videos = [], newChannelUrl = "", errorMsg = Just (D.errorToString err), currentVideo = Nothing, seenVideos = [], apiKey = "" }
+            { channels = [], videos = [], newChannelUrl = "", errorMsg = Just (D.errorToString err), currentVideo = Nothing, seenVideos = Set.empty, apiKey = "" }
 
 
 init : E.Value -> ( Model, Cmd Msg )
@@ -76,7 +78,7 @@ init flags =
     ( model
     , Cmd.batch
         (List.map
-            (getChannelVideos model.apiKey)
+            (getChannelVideos model.apiKey model.seenVideos)
             (flags |> decodeFlags |> .channels)
         )
     )
@@ -131,7 +133,7 @@ update msg model =
 
         FinishVideo video ->
             ( { model
-                | seenVideos = video.id :: model.seenVideos
+                | seenVideos = Set.insert video.id model.seenVideos
                 , currentVideo = Nothing
               }
             , Cmd.none
@@ -160,7 +162,7 @@ update msg model =
                         ( { model | errorMsg = Just ("Already subscribed to " ++ channel.title ++ ".") }, Cmd.none )
 
                     else
-                        ( { model | channels = List.filter (\c -> c.id /= channel.id) model.channels ++ [ channel ] }, getChannelVideos model.apiKey channel )
+                        ( { model | channels = List.filter (\c -> c.id /= channel.id) model.channels ++ [ channel ] }, getChannelVideos model.apiKey model.seenVideos channel )
 
                 Err err ->
                     ( { model | errorMsg = Just (httpErrorToString err) }, Cmd.none )
@@ -229,11 +231,11 @@ buildPlaylistUrl apiKey playlistId =
 -- HTTP
 
 
-getChannelVideos : String -> Channel -> Cmd Msg
-getChannelVideos apiKey channel =
+getChannelVideos : String -> Set String -> Channel -> Cmd Msg
+getChannelVideos apiKey seenVideos channel =
     Http.get
         { url = buildPlaylistUrl apiKey channel.uploadPlaylistId
-        , expect = Http.expectJson LoadedChannelVideos (videoListDecoder channel)
+        , expect = Http.expectJson LoadedChannelVideos (videoListDecoder channel seenVideos)
         }
 
 
@@ -297,19 +299,20 @@ descriptionDecoder =
     D.at [ "snippet", "description" ] D.string
 
 
-videoDecoder : Channel -> D.Decoder Video
-videoDecoder channel =
-    D.map5 (Video channel)
+videoDecoder : Channel -> (String -> Bool) -> D.Decoder Video
+videoDecoder channel isSeen =
+    D.map6 (Video channel)
         idDecoder
         publishDecoder
         thumbnailDecoder
         titleDecoder
         descriptionDecoder
+        (D.map isSeen idDecoder)
 
 
-videoListDecoder : Channel -> D.Decoder (List Video)
-videoListDecoder channel =
-    D.field "items" (D.list (videoDecoder channel))
+videoListDecoder : Channel -> Set String -> D.Decoder (List Video)
+videoListDecoder channel seenVideos =
+    D.field "items" (D.list (videoDecoder channel (\id -> Set.member id seenVideos)))
 
 
 channelTitleDecoder : D.Decoder String
@@ -395,7 +398,7 @@ modelDecoder : D.Decoder Model
 modelDecoder =
     D.map3 (Model [] Nothing "" Nothing)
         (D.field "channels" (D.list channelStorageDecoder))
-        (D.field "seen" (D.list D.string))
+        (D.map Set.fromList <| D.field "seen" <| D.list D.string)
         (D.field "apiKey" D.string)
 
 
@@ -565,12 +568,12 @@ channelVideos allVideos channel =
         |> List.reverse
 
 
-isVideoSeen : List String -> Video -> Bool
-isVideoSeen seenVideoIds video =
-    List.member video.id seenVideoIds
+isVideoSeen : Set String -> Video -> Bool
+isVideoSeen seenVideos video =
+    Set.member video.id seenVideos
 
 
-viewChannelColumn : List Video -> List String -> Channel -> Html Msg
+viewChannelColumn : List Video -> Set String -> Channel -> Html Msg
 viewChannelColumn allVideos seenVideoIds channel =
     let
         videos =
