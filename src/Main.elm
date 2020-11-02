@@ -537,8 +537,8 @@ viewVideoThumbnail video seen =
         , onClick (WatchVideo video)
         ]
         [ img [ src video.thumbnailUrl ] []
-        , h3 [] [ Html.text video.title ]
-        , span [] [ Html.text (toDateString video.publishedAt) ]
+        , span [ class "video-title" ] [ Html.text video.title ]
+        , span [ class "video-channel" ] [ Html.text (video.channel.title ++ " (" ++ toDateString video.publishedAt ++ ")") ]
         ]
 
 

@@ -35,18 +35,20 @@ html {
   flex: 1;
 }
 
-input[type=text] {
+input[type="text"] {
   width: "100%";
 }
 
-button, input[type=submit] {
+button,
+input[type="submit"] {
   background-color: white;
   border: 1px solid var(--border-color);
   border-radius: 5px;
   padding: 0.5em;
 }
 
-button:hover, input[type=submit]:hover {
+button:hover,
+input[type="submit"]:hover {
   background-color: var(--border-color);
   cursor: pointer;
 }
@@ -66,7 +68,6 @@ button:hover, input[type=submit]:hover {
 }
 
 .video-thumbnail {
-
   padding: 15px;
 }
 
@@ -82,16 +83,15 @@ button:hover, input[type=submit]:hover {
   filter: brightness(50%) grayscale(50%);
 }
 
-.video-thumbnail > h2 {
-  font-size: 1em;
-}
-
-.video-thumbnail > h3 {
-  font-size: 1em;
-}
-
-.video-thumbnail > span {
+.video-title,
+.video-channel,
+.video-date {
+  display: block;
   font-size: 0.8em;
+}
+
+.video-title {
+  font-weight: bold;
 }
 
 /* Video Player */
@@ -119,7 +119,8 @@ button:hover, input[type=submit]:hover {
   position: absolute;
   width: 100%;
   height: 100%;
-  left: 0; top: 0;
+  left: 0;
+  top: 0;
 }
 
 .stop-scrolling {
