@@ -14,9 +14,7 @@
 	<script type="text/javascript">
 		// Extract the stored data from previous sessions.
 		const storedData = localStorage.getItem('elm-slow-youtube-state');
-		const flags = storedData ? JSON.parse(storedData) : null;
-
-		console.log(flags);
+		const flags = storedData ? JSON.parse(storedData) : {};
 
 		if (!flags["apiKey"]) {
 			const API_KEY = prompt("Enter your API key:")
