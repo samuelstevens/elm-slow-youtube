@@ -9154,72 +9154,6 @@ var $author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$aside,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('sidebar')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$h1,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Channels')
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$id('channel-list')
-									]),
-								function () {
-									switch (model.$) {
-										case 0:
-											var channels = model.a.d;
-											return $author$project$Main$viewChannelList(channels);
-										case 1:
-											var channels = model.a.d;
-											return $author$project$Main$viewChannelList(channels);
-										default:
-											var err = model.a;
-											return _List_fromArray(
-												[
-													$author$project$Main$viewErrorMsg(
-													$elm$core$Maybe$Just(err))
-												]);
-									}
-								}()),
-								A2(
-								$elm$html$Html$form,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onSubmit($author$project$Main$AddChannel)
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$input,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('text'),
-												$elm$html$Html$Attributes$name('url'),
-												$elm$html$Html$Attributes$placeholder('Channel URL'),
-												$elm$html$Html$Events$onInput($author$project$Main$UpdateChannelUrl)
-											]),
-										_List_Nil),
-										A2(
-										$elm$html$Html$input,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$type_('submit'),
-												$elm$html$Html$Attributes$value('Add Channel')
-											]),
-										_List_Nil)
-									]))
-							])),
-						A2(
 						$elm$html$Html$main_,
 						_List_fromArray(
 							[
@@ -9277,6 +9211,72 @@ var $author$project$Main$view = function (model) {
 								return $elm$core$Maybe$Nothing;
 							}
 						}())
+					])),
+				A2(
+				$elm$html$Html$aside,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('sidebar')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Channels')
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$id('channel-list')
+							]),
+						function () {
+							switch (model.$) {
+								case 0:
+									var channels = model.a.d;
+									return $author$project$Main$viewChannelList(channels);
+								case 1:
+									var channels = model.a.d;
+									return $author$project$Main$viewChannelList(channels);
+								default:
+									var err = model.a;
+									return _List_fromArray(
+										[
+											$author$project$Main$viewErrorMsg(
+											$elm$core$Maybe$Just(err))
+										]);
+							}
+						}()),
+						A2(
+						$elm$html$Html$form,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onSubmit($author$project$Main$AddChannel)
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$input,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('text'),
+										$elm$html$Html$Attributes$name('url'),
+										$elm$html$Html$Attributes$placeholder('Channel URL'),
+										$elm$html$Html$Events$onInput($author$project$Main$UpdateChannelUrl)
+									]),
+								_List_Nil),
+								A2(
+								$elm$html$Html$input,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$type_('submit'),
+										$elm$html$Html$Attributes$value('Add Channel')
+									]),
+								_List_Nil)
+							]))
 					]))
 			]));
 };

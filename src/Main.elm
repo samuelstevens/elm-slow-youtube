@@ -370,28 +370,7 @@ view model =
         "Slow YouTube - Elm"
         [ div
             []
-            [ aside
-                [ class "sidebar" ]
-                [ h1 [] [ Html.text "Channels" ]
-                , div
-                    [ id "channel-list" ]
-                    (case model of
-                        Watching { channels } _ ->
-                            viewChannelList channels
-
-                        Overview { channels } _ ->
-                            viewChannelList channels
-
-                        Irrecoverable err ->
-                            [ viewErrorMsg (Just err) ]
-                    )
-                , form
-                    [ Html.Events.onSubmit AddChannel ]
-                    [ input [ type_ "text", name "url", placeholder "Channel URL", Html.Events.onInput UpdateChannelUrl ] []
-                    , input [ type_ "submit", value "Add Channel" ] []
-                    ]
-                ]
-            , main_
+            [ main_
                 [ class
                     (case model of
                         Watching _ _ ->
@@ -429,6 +408,27 @@ view model =
                     _ ->
                         Nothing
                 )
+            ]
+        , aside
+            [ class "sidebar" ]
+            [ h1 [] [ Html.text "Channels" ]
+            , div
+                [ id "channel-list" ]
+                (case model of
+                    Watching { channels } _ ->
+                        viewChannelList channels
+
+                    Overview { channels } _ ->
+                        viewChannelList channels
+
+                    Irrecoverable err ->
+                        [ viewErrorMsg (Just err) ]
+                )
+            , form
+                [ Html.Events.onSubmit AddChannel ]
+                [ input [ type_ "text", name "url", placeholder "Channel URL", Html.Events.onInput UpdateChannelUrl ] []
+                , input [ type_ "submit", value "Add Channel" ] []
+                ]
             ]
         ]
 

@@ -20,10 +20,20 @@ html {
 }
 
 .content {
-  float: left;
+  float: right;
   width: 80%;
   padding: 1em;
   border-left: 1px solid var(--border-color);
+}
+
+@media screen and (max-width: 1024px) {
+  .content {
+    width: 100%;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
 }
 
 .channel-name {
