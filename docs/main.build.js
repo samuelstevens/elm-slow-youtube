@@ -8837,7 +8837,7 @@ var $author$project$Main$viewErrorMsg = function (maybeProblem) {
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text('Unknown error. Sorry!')
+							$elm$html$Html$text('Unknown error. Please contact the developers.')
 						]));
 		}
 	} else {

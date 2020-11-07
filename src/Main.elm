@@ -481,7 +481,7 @@ viewErrorMsg maybeProblem =
             Html.p [] [ Html.text "No API key. Please refresh the page." ]
 
         Just UnknownError ->
-            Html.p [] [ Html.text "Unknown error. Sorry!" ]
+            Html.p [] [ Html.text "Unknown error. Please contact the developers." ]
 
         Nothing ->
             Html.text ""
