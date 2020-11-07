@@ -5680,6 +5680,7 @@ var $author$project$YouTube$channelStorageDecoder = A5(
 	$elm$json$Json$Decode$succeed(_List_Nil));
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $author$project$YouTube$VideoDefinition = F2(
 	function (id, seen) {
 		return {P: id, C: seen};
@@ -5694,65 +5695,24 @@ var $author$project$Main$storedModelDecoder = A4(
 	$elm$json$Json$Decode$map3,
 	$author$project$Main$StoredModel,
 	A2($elm$json$Json$Decode$field, 'apiKey', $elm$json$Json$Decode$string),
-	A2(
-		$elm$json$Json$Decode$field,
-		'channels',
-		$elm$json$Json$Decode$list($author$project$YouTube$channelStorageDecoder)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'seen',
-		$elm$json$Json$Decode$list($author$project$YouTube$videoDefinitionDecoder)));
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var $author$project$Main$unique = function (list) {
-	unique:
-	while (true) {
-		if (!list.b) {
-			return _List_Nil;
-		} else {
-			var x = list.a;
-			var xs = list.b;
-			if (A2($elm$core$List$member, x, xs)) {
-				var $temp$list = xs;
-				list = $temp$list;
-				continue unique;
-			} else {
-				return A2(
-					$elm$core$List$cons,
-					x,
-					$author$project$Main$unique(xs));
-			}
-		}
-	}
-};
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$field,
+				'channels',
+				$elm$json$Json$Decode$list($author$project$YouTube$channelStorageDecoder)),
+				$elm$json$Json$Decode$succeed(_List_Nil)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$field,
+				'seen',
+				$elm$json$Json$Decode$list($author$project$YouTube$videoDefinitionDecoder)),
+				$elm$json$Json$Decode$succeed(_List_Nil)
+			])));
 var $author$project$Main$decodeLocalStorage = function (args) {
 	var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$storedModelDecoder, args);
 	if (!_v0.$) {
@@ -5767,13 +5727,15 @@ var $author$project$Main$decodeLocalStorage = function (args) {
 					N: $author$project$YouTube$activityFromVideoDefinitions(model.C),
 					j: model.j,
 					G: '',
-					d: $author$project$Main$unique(model.d)
+					d: model.d
 				},
 				$elm$core$Maybe$Nothing);
 		}
 	} else {
 		var err = _v0.a;
-		return $author$project$Main$Irrecoverable($author$project$Main$UnknownError);
+		return $author$project$Main$Irrecoverable(
+			$author$project$Main$StorageError(
+				$elm$json$Json$Decode$errorToString(err)));
 	}
 };
 var $author$project$Main$LoadedChannelVideos = function (a) {
@@ -7441,6 +7403,57 @@ var $author$project$Main$flatten = function (list) {
 };
 var $author$project$YouTube$makeDefinition = function (video) {
 	return {P: video.P, C: video.C};
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Main$unique = function (list) {
+	unique:
+	while (true) {
+		if (!list.b) {
+			return _List_Nil;
+		} else {
+			var x = list.a;
+			var xs = list.b;
+			if (A2($elm$core$List$member, x, xs)) {
+				var $temp$list = xs;
+				list = $temp$list;
+				continue unique;
+			} else {
+				return A2(
+					$elm$core$List$cons,
+					x,
+					$author$project$Main$unique(xs));
+			}
+		}
+	}
 };
 var $author$project$Main$storedModelFromApp = function (_v0) {
 	var channels = _v0.d;
@@ -9170,11 +9183,15 @@ var $author$project$Main$view = function (model) {
 							[
 								$author$project$Main$viewErrorMsg(
 								function () {
-									if (model.$ === 1) {
-										var problem = model.b;
-										return problem;
-									} else {
-										return $elm$core$Maybe$Nothing;
+									switch (model.$) {
+										case 1:
+											var problem = model.b;
+											return problem;
+										case 2:
+											var problem = model.a;
+											return $elm$core$Maybe$Just(problem);
+										default:
+											return $elm$core$Maybe$Nothing;
 									}
 								}()),
 								A2(
@@ -9193,11 +9210,7 @@ var $author$project$Main$view = function (model) {
 											return $author$project$Main$viewVideoList(channels);
 										default:
 											var err = model.a;
-											return _List_fromArray(
-												[
-													$author$project$Main$viewErrorMsg(
-													$elm$core$Maybe$Just(err))
-												]);
+											return _List_Nil;
 									}
 								}())
 							])),
@@ -9243,11 +9256,7 @@ var $author$project$Main$view = function (model) {
 									return $author$project$Main$viewChannelList(channels);
 								default:
 									var err = model.a;
-									return _List_fromArray(
-										[
-											$author$project$Main$viewErrorMsg(
-											$elm$core$Maybe$Just(err))
-										]);
+									return _List_Nil;
 							}
 						}()),
 						A2(

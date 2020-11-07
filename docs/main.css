@@ -29,6 +29,7 @@ html {
 @media screen and (max-width: 1024px) {
   .content {
     width: 100%;
+    border-left: none;
   }
 
   .sidebar {

@@ -46,8 +46,8 @@ type Problem
 
 
 type alias App =
-    { channels : List YouTube.Channel
-    , apiKey : String
+    { apiKey : String
+    , channels : List YouTube.Channel
     , activity : YouTube.Activity
 
     -- UI
@@ -86,10 +86,10 @@ decodeLocalStorage args =
                     Irrecoverable ApiKeyError
 
                 _ ->
-                    Overview { channels = unique model.channels, apiKey = model.apiKey, activity = YouTube.activityFromVideoDefinitions model.seen, channelUrl = "" } Nothing
+                    Overview { channels = model.channels, apiKey = model.apiKey, activity = YouTube.activityFromVideoDefinitions model.seen, channelUrl = "" } Nothing
 
         Err err ->
-            Irrecoverable UnknownError
+            Irrecoverable (StorageError (D.errorToString err))
 
 
 
@@ -360,8 +360,8 @@ storedModelDecoder : D.Decoder StoredModel
 storedModelDecoder =
     D.map3 StoredModel
         (D.field "apiKey" D.string)
-        (D.field "channels" <| D.list YouTube.channelStorageDecoder)
-        (D.field "seen" <| D.list YouTube.videoDefinitionDecoder)
+        (D.oneOf [ D.field "channels" (D.list YouTube.channelStorageDecoder), D.succeed [] ])
+        (D.oneOf [ D.field "seen" (D.list YouTube.videoDefinitionDecoder), D.succeed [] ])
 
 
 view : Model -> Browser.Document Msg
@@ -385,6 +385,9 @@ view model =
                         Overview _ problem ->
                             problem
 
+                        Irrecoverable problem ->
+                            Just problem
+
                         _ ->
                             Nothing
                     )
@@ -397,7 +400,7 @@ view model =
                             viewVideoList channels
 
                         Irrecoverable err ->
-                            [ viewErrorMsg (Just err) ]
+                            []
                     )
                 ]
             , viewVideoPlayer
@@ -422,7 +425,7 @@ view model =
                         viewChannelList channels
 
                     Irrecoverable err ->
-                        [ viewErrorMsg (Just err) ]
+                        []
                 )
             , form
                 [ Html.Events.onSubmit AddChannel ]
