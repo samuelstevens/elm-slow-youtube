@@ -499,14 +499,6 @@ viewChannel channel =
         ]
 
 
-viewChannelColumn : YouTube.Channel -> Html Msg
-viewChannelColumn channel =
-    div [ class ("channel-" ++ channel.title) ]
-        (h2 [] [ Html.text channel.title ]
-            :: List.map (viewVideoThumbnail channel) channel.videos
-        )
-
-
 
 --
 -- DOM
