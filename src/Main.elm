@@ -41,6 +41,8 @@ type Problem
     | UrlParseError String
     | HttpError String
     | AlreadySubscribedError String
+    | ApiKeyError
+    | UnknownError
 
 
 type alias App =
@@ -72,32 +74,49 @@ storedModelFromApp { channels, apiKey } =
 type Model
     = Watching App YouTube.Video
     | Overview App (Maybe Problem)
+    | Irrecoverable Problem
 
 
-decodeLocalStorage : E.Value -> ( App, Maybe Problem )
+decodeLocalStorage : E.Value -> Model
 decodeLocalStorage args =
     case D.decodeValue storedModelDecoder args of
         Ok model ->
-            ( { channels = unique model.channels, apiKey = model.apiKey, activity = YouTube.activityFromVideoDefinitions model.seen, channelUrl = "" }, Nothing )
+            case model.apiKey of
+                "" ->
+                    Irrecoverable ApiKeyError
+
+                _ ->
+                    Overview { channels = unique model.channels, apiKey = model.apiKey, activity = YouTube.activityFromVideoDefinitions model.seen, channelUrl = "" } Nothing
 
         Err err ->
-            ( { channels = [], apiKey = "", activity = YouTube.newActivity, channelUrl = "" }, Just (StorageError (D.errorToString err)) )
+            Irrecoverable UnknownError
+
+
+
+-- ( { channels = [], apiKey = "", activity = YouTube.newActivity, channelUrl = "" }, Just (StorageError (D.errorToString err)) )
 
 
 init : E.Value -> ( Model, Cmd Msg )
 init args =
     case decodeLocalStorage args of
-        ( app, (Just (StorageError msg)) as problem ) ->
-            ( Overview app problem, Cmd.none )
+        Overview app (Just (StorageError msg)) ->
+            ( Overview app (Just (StorageError msg)), saveApp app )
 
-        ( app, maybeProblem ) ->
+        Overview app maybeProblem ->
             ( Overview app maybeProblem
             , Cmd.batch
-                (List.map
-                    (getChannelVideos app.apiKey)
-                    app.channels
+                (saveApp app
+                    :: List.map
+                        (getChannelVideos app.apiKey)
+                        app.channels
                 )
             )
+
+        Irrecoverable problem ->
+            ( Irrecoverable problem, Cmd.none )
+
+        _ ->
+            ( Irrecoverable UnknownError, Cmd.none )
 
 
 
@@ -305,6 +324,11 @@ httpErrorToString err =
 port setStorage : E.Value -> Cmd msg
 
 
+saveApp : App -> Cmd Msg
+saveApp app =
+    setStorage (encodeModel (storedModelFromApp app))
+
+
 updateWithStorage : Msg -> Model -> ( Model, Cmd Msg )
 updateWithStorage msg prev =
     let
@@ -313,7 +337,7 @@ updateWithStorage msg prev =
     in
     case new of
         Overview app problem ->
-            ( new, Cmd.batch [ setStorage (encodeModel (storedModelFromApp app)), cmd ] )
+            ( new, Cmd.batch [ saveApp app, cmd ] )
 
         _ ->
             ( new, cmd )
@@ -357,6 +381,9 @@ view model =
 
                         Overview { channels } _ ->
                             viewChannelList channels
+
+                        Irrecoverable err ->
+                            [ viewErrorMsg (Just err) ]
                     )
                 , form
                     [ Html.Events.onSubmit AddChannel ]
@@ -389,6 +416,9 @@ view model =
 
                         Overview { channels } _ ->
                             viewVideoList channels
+
+                        Irrecoverable err ->
+                            [ viewErrorMsg (Just err) ]
                     )
                 ]
             , viewVideoPlayer
@@ -443,6 +473,12 @@ viewErrorMsg maybeProblem =
 
         Just (AlreadySubscribedError msg) ->
             Html.p [] [ Html.text msg ]
+
+        Just ApiKeyError ->
+            Html.p [] [ Html.text "No API key. Please refresh the page." ]
+
+        Just UnknownError ->
+            Html.p [] [ Html.text "Unknown error. Sorry!" ]
 
         Nothing ->
             Html.text ""

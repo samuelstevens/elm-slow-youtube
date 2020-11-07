@@ -5506,14 +5506,19 @@ var $elm$core$Task$perform = F2(
 			A2($elm$core$Task$map, toMessage, task));
 	});
 var $elm$browser$Browser$document = _Browser_document;
+var $author$project$Main$Irrecoverable = function (a) {
+	return {$: 2, a: a};
+};
 var $author$project$Main$Overview = F2(
 	function (a, b) {
 		return {$: 1, a: a, b: b};
 	});
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $author$project$Main$StorageError = function (a) {
 	return {$: 0, a: a};
 };
+var $author$project$Main$UnknownError = {$: 5};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $author$project$Main$ApiKeyError = {$: 4};
 var $author$project$YouTube$Activity = $elm$core$Basics$identity;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
@@ -5640,11 +5645,11 @@ var $elm$core$Dict$fromList = function (assocs) {
 };
 var $author$project$YouTube$activityFromVideoDefinitions = function (defs) {
 	return {
-		D: $elm$core$Dict$fromList(
+		C: $elm$core$Dict$fromList(
 			A2(
 				$elm$core$List$map,
 				function (_v0) {
-					var seen = _v0.D;
+					var seen = _v0.C;
 					var id = _v0.P;
 					var i = id;
 					return _Utils_Tuple2(i, seen);
@@ -5653,10 +5658,9 @@ var $author$project$YouTube$activityFromVideoDefinitions = function (defs) {
 	};
 };
 var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$YouTube$newActivity = {D: $elm$core$Dict$empty};
 var $author$project$Main$StoredModel = F3(
 	function (apiKey, channels, seen) {
-		return {j: apiKey, d: channels, D: seen};
+		return {j: apiKey, d: channels, C: seen};
 	});
 var $author$project$YouTube$Channel = F4(
 	function (id, title, uploadPlaylistId, videos) {
@@ -5678,7 +5682,7 @@ var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$map3 = _Json_map3;
 var $author$project$YouTube$VideoDefinition = F2(
 	function (id, seen) {
-		return {P: id, D: seen};
+		return {P: id, C: seen};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$YouTube$videoDefinitionDecoder = A3(
@@ -5753,21 +5757,23 @@ var $author$project$Main$decodeLocalStorage = function (args) {
 	var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$storedModelDecoder, args);
 	if (!_v0.$) {
 		var model = _v0.a;
-		return _Utils_Tuple2(
-			{
-				N: $author$project$YouTube$activityFromVideoDefinitions(model.D),
-				j: model.j,
-				B: '',
-				d: $author$project$Main$unique(model.d)
-			},
-			$elm$core$Maybe$Nothing);
+		var _v1 = model.j;
+		if (_v1 === '') {
+			return $author$project$Main$Irrecoverable($author$project$Main$ApiKeyError);
+		} else {
+			return A2(
+				$author$project$Main$Overview,
+				{
+					N: $author$project$YouTube$activityFromVideoDefinitions(model.C),
+					j: model.j,
+					G: '',
+					d: $author$project$Main$unique(model.d)
+				},
+				$elm$core$Maybe$Nothing);
+		}
 	} else {
 		var err = _v0.a;
-		return _Utils_Tuple2(
-			{N: $author$project$YouTube$newActivity, j: '', B: '', d: _List_Nil},
-			$elm$core$Maybe$Just(
-				$author$project$Main$StorageError(
-					$elm$json$Json$Decode$errorToString(err))));
+		return $author$project$Main$Irrecoverable($author$project$Main$UnknownError);
 	}
 };
 var $author$project$Main$LoadedChannelVideos = function (a) {
@@ -6505,7 +6511,7 @@ var $elm$http$Http$get = function (r) {
 };
 var $author$project$YouTube$Video = F6(
 	function (id, publishedAt, thumbnail, title, description, seen) {
-		return {aY: description, P: id, ax: publishedAt, D: seen, bf: thumbnail, K: title};
+		return {aY: description, P: id, ax: publishedAt, C: seen, bf: thumbnail, K: title};
 	});
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$at = F2(
@@ -7348,25 +7354,160 @@ var $author$project$Main$getChannelVideos = F2(
 			});
 	});
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$YouTube$encodeId = function (_v0) {
+	var i = _v0;
+	return $elm$json$Json$Encode$string(i);
+};
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(0),
+			pairs));
+};
+var $author$project$YouTube$encodeChannel = function (channel) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'id',
+				$author$project$YouTube$encodeId(channel.P)),
+				_Utils_Tuple2(
+				'title',
+				$elm$json$Json$Encode$string(channel.K)),
+				_Utils_Tuple2(
+				'uploadPlaylistId',
+				$author$project$YouTube$encodeId(channel.bi))
+			]));
+};
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $author$project$YouTube$encodeVideoDefinition = function (def) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'id',
+				$author$project$YouTube$encodeId(def.P)),
+				_Utils_Tuple2(
+				'seen',
+				$elm$json$Json$Encode$bool(def.C))
+			]));
+};
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(0),
+				entries));
+	});
+var $author$project$Main$encodeModel = function (model) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'channels',
+				A2($elm$json$Json$Encode$list, $author$project$YouTube$encodeChannel, model.d)),
+				_Utils_Tuple2(
+				'seen',
+				A2($elm$json$Json$Encode$list, $author$project$YouTube$encodeVideoDefinition, model.C)),
+				_Utils_Tuple2(
+				'apiKey',
+				$elm$json$Json$Encode$string(model.j))
+			]));
+};
+var $author$project$Main$setStorage = _Platform_outgoingPort('setStorage', $elm$core$Basics$identity);
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $author$project$Main$flatten = function (list) {
+	return A3($elm$core$List$foldr, $elm$core$Basics$append, _List_Nil, list);
+};
+var $author$project$YouTube$makeDefinition = function (video) {
+	return {P: video.P, C: video.C};
+};
+var $author$project$Main$storedModelFromApp = function (_v0) {
+	var channels = _v0.d;
+	var apiKey = _v0.j;
+	var seenVideos = A2(
+		$elm$core$List$map,
+		$author$project$YouTube$makeDefinition,
+		$author$project$Main$flatten(
+			A2(
+				$elm$core$List$map,
+				function (chan) {
+					return A2(
+						$elm$core$List$filter,
+						function ($) {
+							return $.C;
+						},
+						chan.aN);
+				},
+				channels)));
+	return {
+		j: apiKey,
+		d: $author$project$Main$unique(channels),
+		C: seenVideos
+	};
+};
+var $author$project$Main$saveApp = function (app) {
+	return $author$project$Main$setStorage(
+		$author$project$Main$encodeModel(
+			$author$project$Main$storedModelFromApp(app)));
+};
 var $author$project$Main$init = function (args) {
 	var _v0 = $author$project$Main$decodeLocalStorage(args);
-	if ((!_v0.b.$) && (!_v0.b.a.$)) {
-		var app = _v0.a;
-		var problem = _v0.b;
-		var msg = problem.a.a;
-		return _Utils_Tuple2(
-			A2($author$project$Main$Overview, app, problem),
-			$elm$core$Platform$Cmd$none);
-	} else {
-		var app = _v0.a;
-		var maybeProblem = _v0.b;
-		return _Utils_Tuple2(
-			A2($author$project$Main$Overview, app, maybeProblem),
-			$elm$core$Platform$Cmd$batch(
-				A2(
-					$elm$core$List$map,
-					$author$project$Main$getChannelVideos(app.j),
-					app.d)));
+	switch (_v0.$) {
+		case 1:
+			if ((!_v0.b.$) && (!_v0.b.a.$)) {
+				var app = _v0.a;
+				var msg = _v0.b.a.a;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Main$Overview,
+						app,
+						$elm$core$Maybe$Just(
+							$author$project$Main$StorageError(msg))),
+					$author$project$Main$saveApp(app));
+			} else {
+				var app = _v0.a;
+				var maybeProblem = _v0.b;
+				return _Utils_Tuple2(
+					A2($author$project$Main$Overview, app, maybeProblem),
+					$elm$core$Platform$Cmd$batch(
+						A2(
+							$elm$core$List$cons,
+							$author$project$Main$saveApp(app),
+							A2(
+								$elm$core$List$map,
+								$author$project$Main$getChannelVideos(app.j),
+								app.d))));
+			}
+		case 2:
+			var problem = _v0.a;
+			return _Utils_Tuple2(
+				$author$project$Main$Irrecoverable(problem),
+				$elm$core$Platform$Cmd$none);
+		default:
+			return _Utils_Tuple2(
+				$author$project$Main$Irrecoverable($author$project$Main$UnknownError),
+				$elm$core$Platform$Cmd$none);
 	}
 };
 var $author$project$Main$ClearError = function (a) {
@@ -7648,118 +7789,6 @@ var $author$project$Main$subscriptions = function (model) {
 		return $elm$core$Platform$Sub$none;
 	}
 };
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$YouTube$encodeId = function (_v0) {
-	var i = _v0;
-	return $elm$json$Json$Encode$string(i);
-};
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(0),
-			pairs));
-};
-var $author$project$YouTube$encodeChannel = function (channel) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'id',
-				$author$project$YouTube$encodeId(channel.P)),
-				_Utils_Tuple2(
-				'title',
-				$elm$json$Json$Encode$string(channel.K)),
-				_Utils_Tuple2(
-				'uploadPlaylistId',
-				$author$project$YouTube$encodeId(channel.bi))
-			]));
-};
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $author$project$YouTube$encodeVideoDefinition = function (def) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'id',
-				$author$project$YouTube$encodeId(def.P)),
-				_Utils_Tuple2(
-				'seen',
-				$elm$json$Json$Encode$bool(def.D))
-			]));
-};
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(0),
-				entries));
-	});
-var $author$project$Main$encodeModel = function (model) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'channels',
-				A2($elm$json$Json$Encode$list, $author$project$YouTube$encodeChannel, model.d)),
-				_Utils_Tuple2(
-				'seen',
-				A2($elm$json$Json$Encode$list, $author$project$YouTube$encodeVideoDefinition, model.D)),
-				_Utils_Tuple2(
-				'apiKey',
-				$elm$json$Json$Encode$string(model.j))
-			]));
-};
-var $author$project$Main$setStorage = _Platform_outgoingPort('setStorage', $elm$core$Basics$identity);
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $author$project$Main$flatten = function (list) {
-	return A3($elm$core$List$foldr, $elm$core$Basics$append, _List_Nil, list);
-};
-var $author$project$YouTube$makeDefinition = function (video) {
-	return {P: video.P, D: video.D};
-};
-var $author$project$Main$storedModelFromApp = function (_v0) {
-	var channels = _v0.d;
-	var apiKey = _v0.j;
-	var seenVideos = A2(
-		$elm$core$List$map,
-		$author$project$YouTube$makeDefinition,
-		$author$project$Main$flatten(
-			A2(
-				$elm$core$List$map,
-				function (chan) {
-					return A2(
-						$elm$core$List$filter,
-						function ($) {
-							return $.D;
-						},
-						chan.aN);
-				},
-				channels)));
-	return {
-		j: apiKey,
-		d: $author$project$Main$unique(channels),
-		D: seenVideos
-	};
-};
 var $author$project$Main$AlreadySubscribedError = function (a) {
 	return {$: 3, a: a};
 };
@@ -7900,7 +7929,7 @@ var $author$project$YouTube$markVideoAsSeen = F2(
 					function (v) {
 						return _Utils_eq(v.P, id) ? _Utils_update(
 							v,
-							{D: true}) : v;
+							{C: true}) : v;
 					},
 					channel.aN)
 			});
@@ -8240,7 +8269,7 @@ var $author$project$YouTube$markRestOfVideosAsSeen = F2(
 	});
 var $author$project$YouTube$updateVideosWithActivity = F2(
 	function (_v0, channel) {
-		var seen = _v0.D;
+		var seen = _v0.C;
 		var seenIds = A2(
 			$elm$core$List$map,
 			function (_v1) {
@@ -8275,7 +8304,7 @@ var $author$project$Main$update = F2(
 								$author$project$Main$Overview,
 								_Utils_update(
 									app,
-									{B: url}),
+									{G: url}),
 								problem),
 							$elm$core$Platform$Cmd$none);
 					} else {
@@ -8287,14 +8316,14 @@ var $author$project$Main$update = F2(
 						var _v3 = _v0.b;
 						var app = _v3.a;
 						var problem = _v3.b;
-						var _v4 = $author$project$YouTube$parseChannelUrl(app.B);
+						var _v4 = $author$project$YouTube$parseChannelUrl(app.G);
 						if (_v4.$ === 1) {
 							return _Utils_Tuple2(
 								A2(
 									$author$project$Main$Overview,
 									app,
 									$elm$core$Maybe$Just(
-										$author$project$Main$UrlParseError(app.B + ' isn\'t a valid YouTube channel URL.'))),
+										$author$project$Main$UrlParseError(app.G + ' isn\'t a valid YouTube channel URL.'))),
 								$elm$core$Platform$Cmd$none);
 						} else {
 							if (_v4.a.$ === 1) {
@@ -8396,156 +8425,165 @@ var $author$project$Main$update = F2(
 						break _v0$14;
 					}
 				case 8:
-					if (!_v0.b.$) {
-						var result = _v0.a.a;
-						var _v12 = _v0.b;
-						var app = _v12.a;
-						var video = _v12.b;
-						if (!result.$) {
-							var id = result.a;
-							return _Utils_Tuple2(
-								model,
-								A2($author$project$Main$getChannelInfo, app.j, id));
-						} else {
-							var err = result.a;
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						}
-					} else {
-						var result = _v0.a.a;
-						var _v14 = _v0.b;
-						var app = _v14.a;
-						var problem = _v14.b;
-						if (!result.$) {
-							var id = result.a;
-							return _Utils_Tuple2(
-								model,
-								A2($author$project$Main$getChannelInfo, app.j, id));
-						} else {
-							var err = result.a;
-							return _Utils_Tuple2(
-								A2(
-									$author$project$Main$Overview,
-									app,
-									$elm$core$Maybe$Just(
-										$author$project$Main$HttpError(
-											$author$project$Main$httpErrorToString(err)))),
-								$elm$core$Platform$Cmd$none);
-						}
+					switch (_v0.b.$) {
+						case 0:
+							var result = _v0.a.a;
+							var _v12 = _v0.b;
+							var app = _v12.a;
+							var video = _v12.b;
+							if (!result.$) {
+								var id = result.a;
+								return _Utils_Tuple2(
+									model,
+									A2($author$project$Main$getChannelInfo, app.j, id));
+							} else {
+								var err = result.a;
+								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+							}
+						case 1:
+							var result = _v0.a.a;
+							var _v14 = _v0.b;
+							var app = _v14.a;
+							var problem = _v14.b;
+							if (!result.$) {
+								var id = result.a;
+								return _Utils_Tuple2(
+									model,
+									A2($author$project$Main$getChannelInfo, app.j, id));
+							} else {
+								var err = result.a;
+								return _Utils_Tuple2(
+									A2(
+										$author$project$Main$Overview,
+										app,
+										$elm$core$Maybe$Just(
+											$author$project$Main$HttpError(
+												$author$project$Main$httpErrorToString(err)))),
+									$elm$core$Platform$Cmd$none);
+							}
+						default:
+							break _v0$14;
 					}
 				case 7:
-					if (!_v0.b.$) {
-						var result = _v0.a.a;
-						var _v16 = _v0.b;
-						var app = _v16.a;
-						var video = _v16.b;
-						if (!result.$) {
-							var channel = result.a;
-							return _Utils_Tuple2(
-								A2(
-									$author$project$Main$Watching,
-									_Utils_update(
+					switch (_v0.b.$) {
+						case 0:
+							var result = _v0.a.a;
+							var _v16 = _v0.b;
+							var app = _v16.a;
+							var video = _v16.b;
+							if (!result.$) {
+								var channel = result.a;
+								return _Utils_Tuple2(
+									A2(
+										$author$project$Main$Watching,
+										_Utils_update(
+											app,
+											{
+												d: A2(
+													$elm$core$List$map,
+													$author$project$Main$updateChannel(channel),
+													app.d)
+											}),
+										video),
+									$elm$core$Platform$Cmd$none);
+							} else {
+								var err = result.a;
+								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+							}
+						case 1:
+							var result = _v0.a.a;
+							var _v18 = _v0.b;
+							var app = _v18.a;
+							var problem = _v18.b;
+							if (!result.$) {
+								var channel = result.a;
+								return _Utils_Tuple2(
+									A2(
+										$author$project$Main$Overview,
+										_Utils_update(
+											app,
+											{
+												d: A2(
+													$elm$core$List$map,
+													$author$project$Main$updateChannel(
+														A2($author$project$YouTube$updateVideosWithActivity, app.N, channel)),
+													app.d)
+											}),
+										problem),
+									$elm$core$Platform$Cmd$none);
+							} else {
+								var err = result.a;
+								return _Utils_Tuple2(
+									A2(
+										$author$project$Main$Overview,
 										app,
-										{
-											d: A2(
-												$elm$core$List$map,
-												$author$project$Main$updateChannel(channel),
-												app.d)
-										}),
-									video),
-								$elm$core$Platform$Cmd$none);
-						} else {
-							var err = result.a;
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						}
-					} else {
-						var result = _v0.a.a;
-						var _v18 = _v0.b;
-						var app = _v18.a;
-						var problem = _v18.b;
-						if (!result.$) {
-							var channel = result.a;
-							return _Utils_Tuple2(
-								A2(
-									$author$project$Main$Overview,
-									_Utils_update(
-										app,
-										{
-											d: A2(
-												$elm$core$List$map,
-												$author$project$Main$updateChannel(
-													A2($author$project$YouTube$updateVideosWithActivity, app.N, channel)),
-												app.d)
-										}),
-									problem),
-								$elm$core$Platform$Cmd$none);
-						} else {
-							var err = result.a;
-							return _Utils_Tuple2(
-								A2(
-									$author$project$Main$Overview,
-									app,
-									$elm$core$Maybe$Just(
-										$author$project$Main$HttpError(
-											$author$project$Main$httpErrorToString(err)))),
-								$elm$core$Platform$Cmd$none);
-						}
+										$elm$core$Maybe$Just(
+											$author$project$Main$HttpError(
+												$author$project$Main$httpErrorToString(err)))),
+									$elm$core$Platform$Cmd$none);
+							}
+						default:
+							break _v0$14;
 					}
 				case 6:
-					if (!_v0.b.$) {
-						var result = _v0.a.a;
-						var _v20 = _v0.b;
-						var app = _v20.a;
-						var video = _v20.b;
-						if (!result.$) {
-							var channel = result.a;
-							return A2($elm$core$List$member, channel, app.d) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-								A2(
-									$author$project$Main$Watching,
-									_Utils_update(
+					switch (_v0.b.$) {
+						case 0:
+							var result = _v0.a.a;
+							var _v20 = _v0.b;
+							var app = _v20.a;
+							var video = _v20.b;
+							if (!result.$) {
+								var channel = result.a;
+								return A2($elm$core$List$member, channel, app.d) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+									A2(
+										$author$project$Main$Watching,
+										_Utils_update(
+											app,
+											{
+												d: A2($elm$core$List$cons, channel, app.d)
+											}),
+										video),
+									A2($author$project$Main$getChannelVideos, app.j, channel));
+							} else {
+								var err = result.a;
+								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+							}
+						case 1:
+							var result = _v0.a.a;
+							var _v22 = _v0.b;
+							var app = _v22.a;
+							var problem = _v22.b;
+							if (!result.$) {
+								var channel = result.a;
+								return A2($elm$core$List$member, channel, app.d) ? _Utils_Tuple2(
+									A2(
+										$author$project$Main$Overview,
 										app,
-										{
-											d: A2($elm$core$List$cons, channel, app.d)
-										}),
-									video),
-								A2($author$project$Main$getChannelVideos, app.j, channel));
-						} else {
-							var err = result.a;
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						}
-					} else {
-						var result = _v0.a.a;
-						var _v22 = _v0.b;
-						var app = _v22.a;
-						var problem = _v22.b;
-						if (!result.$) {
-							var channel = result.a;
-							return A2($elm$core$List$member, channel, app.d) ? _Utils_Tuple2(
-								A2(
-									$author$project$Main$Overview,
-									app,
-									$elm$core$Maybe$Just(
-										$author$project$Main$AlreadySubscribedError('Already subscribed to ' + (channel.K + '.')))),
-								$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-								A2(
-									$author$project$Main$Overview,
-									_Utils_update(
+										$elm$core$Maybe$Just(
+											$author$project$Main$AlreadySubscribedError('Already subscribed to ' + (channel.K + '.')))),
+									$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+									A2(
+										$author$project$Main$Overview,
+										_Utils_update(
+											app,
+											{
+												d: A2($elm$core$List$cons, channel, app.d)
+											}),
+										problem),
+									A2($author$project$Main$getChannelVideos, app.j, channel));
+							} else {
+								var err = result.a;
+								return _Utils_Tuple2(
+									A2(
+										$author$project$Main$Overview,
 										app,
-										{
-											d: A2($elm$core$List$cons, channel, app.d)
-										}),
-									problem),
-								A2($author$project$Main$getChannelVideos, app.j, channel));
-						} else {
-							var err = result.a;
-							return _Utils_Tuple2(
-								A2(
-									$author$project$Main$Overview,
-									app,
-									$elm$core$Maybe$Just(
-										$author$project$Main$HttpError(
-											$author$project$Main$httpErrorToString(err)))),
-								$elm$core$Platform$Cmd$none);
-						}
+										$elm$core$Maybe$Just(
+											$author$project$Main$HttpError(
+												$author$project$Main$httpErrorToString(err)))),
+									$elm$core$Platform$Cmd$none);
+							}
+						default:
+							break _v0$14;
 					}
 				case 9:
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -8577,9 +8615,7 @@ var $author$project$Main$updateWithStorage = F2(
 				$elm$core$Platform$Cmd$batch(
 					_List_fromArray(
 						[
-							$author$project$Main$setStorage(
-							$author$project$Main$encodeModel(
-								$author$project$Main$storedModelFromApp(app))),
+							$author$project$Main$saveApp(app),
 							cmd
 						])));
 		} else {
@@ -8763,7 +8799,7 @@ var $author$project$Main$viewErrorMsg = function (maybeProblem) {
 						[
 							$elm$html$Html$text(msg)
 						]));
-			default:
+			case 3:
 				var msg = maybeProblem.a.a;
 				return A2(
 					$elm$html$Html$p,
@@ -8771,6 +8807,24 @@ var $author$project$Main$viewErrorMsg = function (maybeProblem) {
 					_List_fromArray(
 						[
 							$elm$html$Html$text(msg)
+						]));
+			case 4:
+				var _v1 = maybeProblem.a;
+				return A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('No API key. Please refresh the page.')
+						]));
+			default:
+				var _v2 = maybeProblem.a;
+				return A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Unknown error. Sorry!')
 						]));
 		}
 	} else {
@@ -8956,7 +9010,7 @@ var $author$project$Main$viewVideoThumbnail = F2(
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class(
-					video.D ? 'video-thumbnail seen' : 'video-thumbnail'),
+					video.C ? 'video-thumbnail seen' : 'video-thumbnail'),
 					$elm$html$Html$Events$onClick(
 					$author$project$Main$WatchVideo(video))
 				]),
@@ -9121,12 +9175,20 @@ var $author$project$Main$view = function (model) {
 										$elm$html$Html$Attributes$id('channel-list')
 									]),
 								function () {
-									if (!model.$) {
-										var channels = model.a.d;
-										return $author$project$Main$viewChannelList(channels);
-									} else {
-										var channels = model.a.d;
-										return $author$project$Main$viewChannelList(channels);
+									switch (model.$) {
+										case 0:
+											var channels = model.a.d;
+											return $author$project$Main$viewChannelList(channels);
+										case 1:
+											var channels = model.a.d;
+											return $author$project$Main$viewChannelList(channels);
+										default:
+											var err = model.a;
+											return _List_fromArray(
+												[
+													$author$project$Main$viewErrorMsg(
+													$elm$core$Maybe$Just(err))
+												]);
 									}
 								}()),
 								A2(
@@ -9188,12 +9250,20 @@ var $author$project$Main$view = function (model) {
 										$elm$html$Html$Attributes$id('video-list')
 									]),
 								function () {
-									if (!model.$) {
-										var channels = model.a.d;
-										return $author$project$Main$viewVideoList(channels);
-									} else {
-										var channels = model.a.d;
-										return $author$project$Main$viewVideoList(channels);
+									switch (model.$) {
+										case 0:
+											var channels = model.a.d;
+											return $author$project$Main$viewVideoList(channels);
+										case 1:
+											var channels = model.a.d;
+											return $author$project$Main$viewVideoList(channels);
+										default:
+											var err = model.a;
+											return _List_fromArray(
+												[
+													$author$project$Main$viewErrorMsg(
+													$elm$core$Maybe$Just(err))
+												]);
 									}
 								}())
 							])),
