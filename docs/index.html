@@ -14,7 +14,7 @@
 	<script type="text/javascript">
 		// Extract the stored data from previous sessions.
 		const storedData = localStorage.getItem('elm-slow-youtube-state');
-		const flags = storedData ? JSON.parse(storedData) : {};
+		const flags = storedData ? JSON.parse(storedData) : { "channels": [] };
 
 		if (!flags["apiKey"]) {
 			const API_KEY = prompt("Enter your API key:")
@@ -24,6 +24,7 @@
 		const app = Elm.Main.init({ node: document.getElementById('myapp'), flags: flags });
 
 		app.ports.setStorage.subscribe(function (state) {
+			console.log(state);
 			localStorage.setItem('elm-slow-youtube-state', JSON.stringify(state));
 		});
 	</script>

@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.W.K === region.ad.K)
+	if (region.U.I === region.ab.I)
 	{
-		return 'on line ' + region.W.K;
+		return 'on line ' + region.U.I;
 	}
-	return 'on lines ' + region.W.K + ' through ' + region.ad.K;
+	return 'on lines ' + region.U.I + ' through ' + region.ab.I;
 }
 
 
@@ -1857,9 +1857,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.a4,
-		impl.bj,
-		impl.bg,
+		impl.a1,
+		impl.bh,
+		impl.be,
 		function() { return function() {} }
 	);
 });
@@ -2704,9 +2704,9 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		w: func(record.w),
-		X: record.X,
-		T: record.T
+		u: func(record.u),
+		V: record.V,
+		S: record.S
 	}
 });
 
@@ -2974,11 +2974,11 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.w;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.X;
+		var message = !tag ? value : tag < 3 ? value.a : value.u;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.V;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.T) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.S) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3928,11 +3928,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.a4,
-		impl.bj,
-		impl.bg,
+		impl.a1,
+		impl.bh,
+		impl.be,
 		function(sendToApp, initialModel) {
-			var view = impl.bl;
+			var view = impl.bj;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3964,12 +3964,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.a4,
-		impl.bj,
-		impl.bg,
+		impl.a1,
+		impl.bh,
+		impl.be,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.V && impl.V(sendToApp)
-			var view = impl.bl;
+			var divertHrefToApp = impl.T && impl.T(sendToApp)
+			var view = impl.bj;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3977,12 +3977,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aW);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aU);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.bi) && (_VirtualDom_doc.title = title = doc.bi);
+				(title !== doc.w) && (_VirtualDom_doc.title = title = doc.w);
 			});
 		}
 	);
@@ -4038,12 +4038,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.a8;
-	var onUrlRequest = impl.a9;
+	var onUrlChange = impl.a5;
+	var onUrlRequest = impl.a6;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		V: function(sendToApp)
+		T: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4059,9 +4059,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.ay === next.ay
-							&& curr.al === next.al
-							&& curr.au.a === next.au.a
+							&& curr.aw === next.aw
+							&& curr.aj === next.aj
+							&& curr.as.a === next.as.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4069,13 +4069,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		a4: function(flags)
+		a1: function(flags)
 		{
-			return A3(impl.a4, flags, _Browser_getUrl(), key);
+			return A3(impl.a1, flags, _Browser_getUrl(), key);
 		},
-		bl: impl.bl,
 		bj: impl.bj,
-		bg: impl.bg
+		bh: impl.bh,
+		be: impl.be
 	});
 }
 
@@ -4141,17 +4141,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { a1: 'hidden', aX: 'visibilitychange' }
+		? { a$: 'hidden', aV: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { a1: 'mozHidden', aX: 'mozvisibilitychange' }
+		? { a$: 'mozHidden', aV: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { a1: 'msHidden', aX: 'msvisibilitychange' }
+		? { a$: 'msHidden', aV: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { a1: 'webkitHidden', aX: 'webkitvisibilitychange' }
-		: { a1: 'hidden', aX: 'visibilitychange' };
+		? { a$: 'webkitHidden', aV: 'webkitvisibilitychange' }
+		: { a$: 'hidden', aV: 'visibilitychange' };
 }
 
 
@@ -4232,12 +4232,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		aG: _Browser_getScene(),
-		aP: {
-			aR: _Browser_window.pageXOffset,
-			aS: _Browser_window.pageYOffset,
-			aQ: _Browser_doc.documentElement.clientWidth,
-			aj: _Browser_doc.documentElement.clientHeight
+		aE: _Browser_getScene(),
+		aN: {
+			aP: _Browser_window.pageXOffset,
+			aQ: _Browser_window.pageYOffset,
+			aO: _Browser_doc.documentElement.clientWidth,
+			ah: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4247,8 +4247,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		aQ: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		aj: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		aO: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		ah: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4271,15 +4271,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			aG: {
-				aQ: node.scrollWidth,
-				aj: node.scrollHeight
+			aE: {
+				aO: node.scrollWidth,
+				ah: node.scrollHeight
 			},
-			aP: {
-				aR: node.scrollLeft,
-				aS: node.scrollTop,
-				aQ: node.clientWidth,
-				aj: node.clientHeight
+			aN: {
+				aP: node.scrollLeft,
+				aQ: node.scrollTop,
+				aO: node.clientWidth,
+				ah: node.clientHeight
 			}
 		};
 	});
@@ -4309,18 +4309,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			aG: _Browser_getScene(),
-			aP: {
-				aR: x,
-				aS: y,
-				aQ: _Browser_doc.documentElement.clientWidth,
-				aj: _Browser_doc.documentElement.clientHeight
+			aE: _Browser_getScene(),
+			aN: {
+				aP: x,
+				aQ: y,
+				aO: _Browser_doc.documentElement.clientWidth,
+				ah: _Browser_doc.documentElement.clientHeight
 			},
-			a$: {
-				aR: x + rect.left,
-				aS: y + rect.top,
-				aQ: rect.width,
-				aj: rect.height
+			aZ: {
+				aP: x + rect.left,
+				aQ: y + rect.top,
+				aO: rect.width,
+				ah: rect.height
 			}
 		};
 	});
@@ -4382,25 +4382,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.Q.a(response)));
+			callback(toTask(request.O.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.Q.b, xhr)); });
-		$elm$core$Maybe$isJust(request.aN) && _Http_track(router, xhr, request.aN.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.O.b, xhr)); });
+		$elm$core$Maybe$isJust(request.aK) && _Http_track(router, xhr, request.aK.a);
 
 		try {
-			xhr.open(request.a6, request.Y, true);
+			xhr.open(request.a3, request.W, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.Y));
+			return done($elm$http$Http$BadUrl_(request.W));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.aW.a && xhr.setRequestHeader('Content-Type', request.aW.a);
-		xhr.send(request.aW.b);
+		request.aU.a && xhr.setRequestHeader('Content-Type', request.aU.a);
+		xhr.send(request.aU.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4411,13 +4411,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request.ai; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.ag; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.bh.a || 0;
-	xhr.responseType = request.Q.d;
-	xhr.withCredentials = request.aU;
+	xhr.timeout = request.bg.a || 0;
+	xhr.responseType = request.O.d;
+	xhr.withCredentials = request.aS;
 }
 
 
@@ -4438,10 +4438,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		Y: xhr.responseURL,
-		be: xhr.status,
-		bf: xhr.statusText,
-		ai: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		W: xhr.responseURL,
+		bc: xhr.status,
+		bd: xhr.statusText,
+		ag: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4536,15 +4536,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			bd: event.loaded,
-			aI: event.total
+			bb: event.loaded,
+			aG: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			bb: event.loaded,
-			aI: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			a9: event.loaded,
+			aG: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }
@@ -5129,25 +5129,25 @@ var $elm$core$Array$treeFromBuilder = F2(
 	});
 var $elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
-		if (!builder.e) {
+		if (!builder.f) {
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.g),
+				$elm$core$Elm$JsArray$length(builder.h),
 				$elm$core$Array$shiftStep,
 				$elm$core$Elm$JsArray$empty,
-				builder.g);
+				builder.h);
 		} else {
-			var treeLen = builder.e * $elm$core$Array$branchFactor;
+			var treeLen = builder.f * $elm$core$Array$branchFactor;
 			var depth = $elm$core$Basics$floor(
 				A2($elm$core$Basics$logBase, $elm$core$Array$branchFactor, treeLen - 1));
-			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.h) : builder.h;
-			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.e);
+			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.i) : builder.i;
+			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.f);
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.g) + treeLen,
+				$elm$core$Elm$JsArray$length(builder.h) + treeLen,
 				A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep),
 				tree,
-				builder.g);
+				builder.h);
 		}
 	});
 var $elm$core$Basics$idiv = _Basics_idiv;
@@ -5160,7 +5160,7 @@ var $elm$core$Array$initializeHelp = F5(
 				return A2(
 					$elm$core$Array$builderToArray,
 					false,
-					{h: nodeList, e: (len / $elm$core$Array$branchFactor) | 0, g: tail});
+					{i: nodeList, f: (len / $elm$core$Array$branchFactor) | 0, h: tail});
 			} else {
 				var leaf = $elm$core$Array$Leaf(
 					A3($elm$core$Elm$JsArray$initialize, $elm$core$Array$branchFactor, fromIndex, fn));
@@ -5227,7 +5227,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {ah: fragment, al: host, as: path, au: port_, ay: protocol, az: query};
+		return {af: fragment, aj: host, aq: path, as: port_, aw: protocol, ax: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5506,179 +5506,17 @@ var $elm$core$Task$perform = F2(
 			A2($elm$core$Task$map, toMessage, task));
 	});
 var $elm$browser$Browser$document = _Browser_document;
+var $author$project$Main$Overview = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$Main$Model = F7(
-	function (videos, currentVideo, newChannelUrl, errorMsg, channels, seenVideos, apiKey) {
-		return {u: apiKey, m: channels, z: currentVideo, o: errorMsg, s: newChannelUrl, F: seenVideos, I: videos};
-	});
-var $author$project$Channel$Channel = F3(
-	function (id, title, uploadPlaylistId) {
-		return {a2: id, bi: title, bk: uploadPlaylistId};
-	});
-var $author$project$Channel$Id = $elm$core$Basics$identity;
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$map3 = _Json_map3;
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$channelStorageDecoder = A4(
-	$elm$json$Json$Decode$map3,
-	$author$project$Channel$Channel,
-	A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Basics$identity,
-		A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string)),
-	A2($elm$json$Json$Decode$field, 'title', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'uploadPlaylistId', $elm$json$Json$Decode$string));
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Main$modelDecoder = A4(
-	$elm$json$Json$Decode$map3,
-	A4($author$project$Main$Model, _List_Nil, $elm$core$Maybe$Nothing, '', $elm$core$Maybe$Nothing),
-	A2(
-		$elm$json$Json$Decode$field,
-		'channels',
-		$elm$json$Json$Decode$list($author$project$Main$channelStorageDecoder)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'seen',
-		$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
-	A2($elm$json$Json$Decode$field, 'apiKey', $elm$json$Json$Decode$string));
-var $author$project$Main$decodeFlags = function (flags) {
-	var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$modelDecoder, flags);
-	if (!_v0.$) {
-		var model = _v0.a;
-		return model;
-	} else {
-		var err = _v0.a;
-		return {
-			u: '',
-			m: _List_Nil,
-			z: $elm$core$Maybe$Nothing,
-			o: $elm$core$Maybe$Just(
-				$elm$json$Json$Decode$errorToString(err)),
-			s: '',
-			F: _List_Nil,
-			I: _List_Nil
-		};
-	}
-};
-var $author$project$Main$LoadedChannelVideos = function (a) {
-	return {$: 7, a: a};
-};
-var $elm$url$Url$Builder$toQueryPair = function (_v0) {
-	var key = _v0.a;
-	var value = _v0.b;
-	return key + ('=' + value);
-};
-var $elm$url$Url$Builder$toQuery = function (parameters) {
-	if (!parameters.b) {
-		return '';
-	} else {
-		return '?' + A2(
-			$elm$core$String$join,
-			'&',
-			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
-	}
-};
-var $elm$url$Url$Builder$crossOrigin = F3(
-	function (prePath, pathSegments, parameters) {
-		return prePath + ('/' + (A2($elm$core$String$join, '/', pathSegments) + $elm$url$Url$Builder$toQuery(parameters)));
-	});
-var $elm$url$Url$Builder$QueryParameter = F2(
-	function (a, b) {
-		return {$: 0, a: a, b: b};
-	});
-var $elm$url$Url$percentEncode = _Url_percentEncode;
-var $elm$url$Url$Builder$int = F2(
-	function (key, value) {
-		return A2(
-			$elm$url$Url$Builder$QueryParameter,
-			$elm$url$Url$percentEncode(key),
-			$elm$core$String$fromInt(value));
-	});
-var $elm$url$Url$Builder$string = F2(
-	function (key, value) {
-		return A2(
-			$elm$url$Url$Builder$QueryParameter,
-			$elm$url$Url$percentEncode(key),
-			$elm$url$Url$percentEncode(value));
-	});
-var $author$project$Main$buildPlaylistUrl = F2(
-	function (apiKey, playlistId) {
-		return A3(
-			$elm$url$Url$Builder$crossOrigin,
-			'https://www.googleapis.com',
-			_List_fromArray(
-				['youtube', 'v3', 'playlistItems']),
-			_List_fromArray(
-				[
-					A2($elm$url$Url$Builder$string, 'part', 'snippet'),
-					A2($elm$url$Url$Builder$string, 'playlistId', playlistId),
-					A2($elm$url$Url$Builder$string, 'key', apiKey),
-					A2($elm$url$Url$Builder$int, 'maxResults', 3)
-				]));
-	});
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
-var $elm$http$Http$BadStatus_ = F2(
-	function (a, b) {
-		return {$: 3, a: a, b: b};
-	});
-var $elm$http$Http$BadUrl_ = function (a) {
+var $author$project$Main$StorageError = function (a) {
 	return {$: 0, a: a};
 };
-var $elm$http$Http$GoodStatus_ = F2(
-	function (a, b) {
-		return {$: 4, a: a, b: b};
-	});
-var $elm$http$Http$NetworkError_ = {$: 2};
-var $elm$http$Http$Receiving = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$http$Http$Sending = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$http$Http$Timeout_ = {$: 1};
+var $author$project$YouTube$Activity = $elm$core$Basics$identity;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $elm$core$Maybe$isJust = function (maybe) {
-	if (!maybe.$) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === -2) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1) {
-					case 0:
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 1:
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
 var $elm$core$Dict$Black = 1;
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5739,6 +5577,7 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
+var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === -2) {
@@ -5785,6 +5624,266 @@ var $elm$core$Dict$insert = F3(
 		} else {
 			var x = _v0;
 			return x;
+		}
+	});
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
+var $author$project$YouTube$activityFromVideoDefinitions = function (defs) {
+	return {
+		E: $elm$core$Dict$fromList(
+			A2(
+				$elm$core$List$map,
+				function (_v0) {
+					var seen = _v0.E;
+					var id = _v0.P;
+					var i = id;
+					return _Utils_Tuple2(i, seen);
+				},
+				defs))
+	};
+};
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$YouTube$newActivity = {E: $elm$core$Dict$empty};
+var $author$project$Main$StoredModel = F3(
+	function (apiKey, channels, seen) {
+		return {j: apiKey, d: channels, E: seen};
+	});
+var $author$project$YouTube$Channel = F4(
+	function (id, title, uploadPlaylistId, videos) {
+		return {P: id, w: title, bi: uploadPlaylistId, aM: videos};
+	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$YouTube$Id = $elm$core$Basics$identity;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$YouTube$idDecoder = A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$YouTube$channelStorageDecoder = A5(
+	$elm$json$Json$Decode$map4,
+	$author$project$YouTube$Channel,
+	A2($elm$json$Json$Decode$field, 'id', $author$project$YouTube$idDecoder),
+	A2($elm$json$Json$Decode$field, 'title', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'uploadPlaylistId', $author$project$YouTube$idDecoder),
+	$elm$json$Json$Decode$succeed(_List_Nil));
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $author$project$YouTube$VideoDefinition = F2(
+	function (id, seen) {
+		return {P: id, E: seen};
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $author$project$YouTube$videoDefinitionDecoder = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$YouTube$VideoDefinition,
+	A2($elm$json$Json$Decode$field, 'id', $author$project$YouTube$idDecoder),
+	A2($elm$json$Json$Decode$field, 'seen', $elm$json$Json$Decode$bool));
+var $author$project$Main$storedModelDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Main$StoredModel,
+	A2($elm$json$Json$Decode$field, 'apiKey', $elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$field,
+		'channels',
+		$elm$json$Json$Decode$list($author$project$YouTube$channelStorageDecoder)),
+	A2(
+		$elm$json$Json$Decode$field,
+		'seen',
+		$elm$json$Json$Decode$list($author$project$YouTube$videoDefinitionDecoder)));
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Main$unique = function (list) {
+	unique:
+	while (true) {
+		if (!list.b) {
+			return _List_Nil;
+		} else {
+			var x = list.a;
+			var xs = list.b;
+			if (A2($elm$core$List$member, x, xs)) {
+				var $temp$list = xs;
+				list = $temp$list;
+				continue unique;
+			} else {
+				return A2(
+					$elm$core$List$cons,
+					x,
+					$author$project$Main$unique(xs));
+			}
+		}
+	}
+};
+var $author$project$Main$decodeLocalStorage = function (args) {
+	var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$storedModelDecoder, args);
+	if (!_v0.$) {
+		var model = _v0.a;
+		return _Utils_Tuple2(
+			{
+				N: $author$project$YouTube$activityFromVideoDefinitions(model.E),
+				j: model.j,
+				C: '',
+				d: $author$project$Main$unique(model.d)
+			},
+			$elm$core$Maybe$Nothing);
+	} else {
+		var err = _v0.a;
+		return _Utils_Tuple2(
+			{N: $author$project$YouTube$newActivity, j: '', C: '', d: _List_Nil},
+			$elm$core$Maybe$Just(
+				$author$project$Main$StorageError(
+					$elm$json$Json$Decode$errorToString(err))));
+	}
+};
+var $author$project$Main$LoadedChannelVideos = function (a) {
+	return {$: 7, a: a};
+};
+var $elm$url$Url$Builder$toQueryPair = function (_v0) {
+	var key = _v0.a;
+	var value = _v0.b;
+	return key + ('=' + value);
+};
+var $elm$url$Url$Builder$toQuery = function (parameters) {
+	if (!parameters.b) {
+		return '';
+	} else {
+		return '?' + A2(
+			$elm$core$String$join,
+			'&',
+			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
+	}
+};
+var $elm$url$Url$Builder$crossOrigin = F3(
+	function (prePath, pathSegments, parameters) {
+		return prePath + ('/' + (A2($elm$core$String$join, '/', pathSegments) + $elm$url$Url$Builder$toQuery(parameters)));
+	});
+var $elm$url$Url$Builder$QueryParameter = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $elm$url$Url$percentEncode = _Url_percentEncode;
+var $elm$url$Url$Builder$int = F2(
+	function (key, value) {
+		return A2(
+			$elm$url$Url$Builder$QueryParameter,
+			$elm$url$Url$percentEncode(key),
+			$elm$core$String$fromInt(value));
+	});
+var $elm$url$Url$Builder$string = F2(
+	function (key, value) {
+		return A2(
+			$elm$url$Url$Builder$QueryParameter,
+			$elm$url$Url$percentEncode(key),
+			$elm$url$Url$percentEncode(value));
+	});
+var $author$project$YouTube$buildPlaylistUrl = F2(
+	function (apiKey, _v0) {
+		var playlistId = _v0;
+		return A3(
+			$elm$url$Url$Builder$crossOrigin,
+			'https://www.googleapis.com',
+			_List_fromArray(
+				['youtube', 'v3', 'playlistItems']),
+			_List_fromArray(
+				[
+					A2($elm$url$Url$Builder$string, 'part', 'snippet'),
+					A2($elm$url$Url$Builder$string, 'playlistId', playlistId),
+					A2($elm$url$Url$Builder$string, 'key', apiKey),
+					A2($elm$url$Url$Builder$int, 'maxResults', 3)
+				]));
+	});
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $elm$http$Http$BadStatus_ = F2(
+	function (a, b) {
+		return {$: 3, a: a, b: b};
+	});
+var $elm$http$Http$BadUrl_ = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$http$Http$GoodStatus_ = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
+var $elm$http$Http$NetworkError_ = {$: 2};
+var $elm$http$Http$Receiving = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$http$Http$Sending = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$http$Http$Timeout_ = {$: 1};
+var $elm$core$Maybe$isJust = function (maybe) {
+	if (!maybe.$) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === -2) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1) {
+					case 0:
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 1:
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
 		}
 	});
 var $elm$core$Dict$getMin = function (dict) {
@@ -6209,7 +6308,7 @@ var $elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.be));
+					$elm$http$Http$BadStatus(metadata.bc));
 			default:
 				var body = response.b;
 				return A2(
@@ -6237,7 +6336,7 @@ var $elm$http$Http$Request = function (a) {
 };
 var $elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {aB: reqs, aK: subs};
+		return {az: reqs, aI: subs};
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
@@ -6281,7 +6380,7 @@ var $elm$http$Http$updateReqs = F3(
 					return A2(
 						$elm$core$Task$andThen,
 						function (pid) {
-							var _v4 = req.aN;
+							var _v4 = req.aK;
 							if (_v4.$ === 1) {
 								return A3($elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -6311,7 +6410,7 @@ var $elm$http$Http$onEffects = F4(
 				return $elm$core$Task$succeed(
 					A2($elm$http$Http$State, reqs, subs));
 			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.aB));
+			A3($elm$http$Http$updateReqs, router, cmds, state.az));
 	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6354,7 +6453,7 @@ var $elm$http$Http$onSelfMsg = F3(
 				A2(
 					$elm$core$List$filterMap,
 					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.aK)));
+					state.aI)));
 	});
 var $elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -6368,14 +6467,14 @@ var $elm$http$Http$cmdMap = F2(
 			var r = cmd.a;
 			return $elm$http$Http$Request(
 				{
+					aS: r.aS,
 					aU: r.aU,
-					aW: r.aW,
-					Q: A2(_Http_mapExpect, func, r.Q),
-					ai: r.ai,
-					a6: r.a6,
-					bh: r.bh,
-					aN: r.aN,
-					Y: r.Y
+					O: A2(_Http_mapExpect, func, r.O),
+					ag: r.ag,
+					a3: r.a3,
+					bg: r.bg,
+					aK: r.aK,
+					W: r.W
 				});
 		}
 	});
@@ -6398,32 +6497,27 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{aU: false, aW: r.aW, Q: r.Q, ai: r.ai, a6: r.a6, bh: r.bh, aN: r.aN, Y: r.Y}));
+			{aS: false, aU: r.aU, O: r.O, ag: r.ag, a3: r.a3, bg: r.bg, aK: r.aK, W: r.W}));
 };
 var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
-		{aW: $elm$http$Http$emptyBody, Q: r.Q, ai: _List_Nil, a6: 'GET', bh: $elm$core$Maybe$Nothing, aN: $elm$core$Maybe$Nothing, Y: r.Y});
+		{aU: $elm$http$Http$emptyBody, O: r.O, ag: _List_Nil, a3: 'GET', bg: $elm$core$Maybe$Nothing, aK: $elm$core$Maybe$Nothing, W: r.W});
 };
-var $author$project$Main$Video = F6(
-	function (channel, id, publishedAt, thumbnailUrl, title, description) {
-		return {P: channel, aZ: description, a2: id, U: publishedAt, aM: thumbnailUrl, bi: title};
+var $author$project$YouTube$Video = F6(
+	function (id, publishedAt, thumbnail, title, description, seen) {
+		return {aX: description, P: id, a8: publishedAt, E: seen, bf: thumbnail, w: title};
 	});
+var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $author$project$Main$descriptionDecoder = A2(
+var $author$project$YouTube$descriptionDecoder = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
 		['snippet', 'description']),
 	$elm$json$Json$Decode$string);
-var $author$project$Main$idDecoder = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['snippet', 'resourceId', 'videoId']),
-	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$map5 = _Json_map5;
-var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$map6 = _Json_map6;
 var $elm$parser$Parser$deadEndsToString = function (deadEnds) {
 	return 'TODO deadEndsToString';
 };
@@ -6475,14 +6569,14 @@ var $elm$parser$Parser$Advanced$AddRight = F2(
 var $elm$parser$Parser$Advanced$Empty = {$: 0};
 var $elm$parser$Parser$Advanced$Problem = F4(
 	function (row, col, problem, contextStack) {
-		return {ab: col, aY: contextStack, av: problem, aF: row};
+		return {_: col, aW: contextStack, at: problem, aD: row};
 	});
 var $elm$parser$Parser$Advanced$fromState = F2(
 	function (s, x) {
 		return A2(
 			$elm$parser$Parser$Advanced$AddRight,
 			$elm$parser$Parser$Advanced$Empty,
-			A4($elm$parser$Parser$Advanced$Problem, s.aF, s.ab, x, s.c));
+			A4($elm$parser$Parser$Advanced$Problem, s.aD, s._, x, s.c));
 	});
 var $elm$parser$Parser$Advanced$end = function (x) {
 	return function (s) {
@@ -6509,7 +6603,7 @@ var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
 					$elm$parser$Parser$Advanced$Good,
 					_Utils_cmp(s0.b, offset) < 0,
 					0,
-					{ab: col, c: s0.c, d: s0.d, b: offset, aF: row, a: s0.a});
+					{_: col, c: s0.c, e: s0.e, b: offset, aD: row, a: s0.a});
 			} else {
 				if (_Utils_eq(newOffset, -2)) {
 					var $temp$isGood = isGood,
@@ -6541,7 +6635,7 @@ var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
 	});
 var $elm$parser$Parser$Advanced$chompWhile = function (isGood) {
 	return function (s) {
-		return A5($elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.b, s.aF, s.ab, s);
+		return A5($elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.b, s.aD, s._, s);
 	};
 };
 var $elm$parser$Parser$chompWhile = $elm$parser$Parser$Advanced$chompWhile;
@@ -6729,11 +6823,11 @@ var $elm$parser$Parser$Advanced$chompIf = F2(
 				$elm$parser$Parser$Advanced$Good,
 				true,
 				0,
-				{ab: 1, c: s.c, d: s.d, b: s.b + 1, aF: s.aF + 1, a: s.a}) : A3(
+				{_: 1, c: s.c, e: s.e, b: s.b + 1, aD: s.aD + 1, a: s.a}) : A3(
 				$elm$parser$Parser$Advanced$Good,
 				true,
 				0,
-				{ab: s.ab + 1, c: s.c, d: s.d, b: newOffset, aF: s.aF, a: s.a}));
+				{_: s._ + 1, c: s.c, e: s.e, b: newOffset, aD: s.aD, a: s.a}));
 		};
 	});
 var $elm$parser$Parser$chompIf = function (isGood) {
@@ -6869,7 +6963,7 @@ var $elm$parser$Parser$Advanced$token = function (_v0) {
 	var expecting = _v0.b;
 	var progress = !$elm$core$String$isEmpty(str);
 	return function (s) {
-		var _v1 = A5($elm$parser$Parser$Advanced$isSubString, str, s.b, s.aF, s.ab, s.a);
+		var _v1 = A5($elm$parser$Parser$Advanced$isSubString, str, s.b, s.aD, s._, s.a);
 		var newOffset = _v1.a;
 		var newRow = _v1.b;
 		var newCol = _v1.c;
@@ -6880,7 +6974,7 @@ var $elm$parser$Parser$Advanced$token = function (_v0) {
 			$elm$parser$Parser$Advanced$Good,
 			progress,
 			0,
-			{ab: newCol, c: s.c, d: s.d, b: newOffset, aF: newRow, a: s.a});
+			{_: newCol, c: s.c, e: s.e, b: newOffset, aD: newRow, a: s.a});
 	};
 };
 var $elm$parser$Parser$Advanced$symbol = $elm$parser$Parser$Advanced$token;
@@ -7119,10 +7213,10 @@ var $rtfeldman$elm_iso8601_date_strings$Iso8601$iso8601 = A2(
 	$rtfeldman$elm_iso8601_date_strings$Iso8601$monthYearDayInMs);
 var $elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
-		return {ab: col, av: problem, aF: row};
+		return {_: col, at: problem, aD: row};
 	});
 var $elm$parser$Parser$problemToDeadEnd = function (p) {
-	return A3($elm$parser$Parser$DeadEnd, p.aF, p.ab, p.av);
+	return A3($elm$parser$Parser$DeadEnd, p.aD, p._, p.at);
 };
 var $elm$parser$Parser$Advanced$bagToList = F2(
 	function (bag, list) {
@@ -7154,7 +7248,7 @@ var $elm$parser$Parser$Advanced$run = F2(
 	function (_v0, src) {
 		var parse = _v0;
 		var _v1 = parse(
-			{ab: 1, c: _List_Nil, d: 1, b: 0, aF: 1, a: src});
+			{_: 1, c: _List_Nil, e: 1, b: 0, aD: 1, a: src});
 		if (!_v1.$) {
 			var value = _v1.b;
 			return $elm$core$Result$Ok(value);
@@ -7193,58 +7287,87 @@ var $rtfeldman$elm_iso8601_date_strings$Iso8601$decoder = A2(
 		}
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Main$publishDecoder = A2(
+var $author$project$YouTube$publishDecoder = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
 		['snippet', 'publishedAt']),
 	$rtfeldman$elm_iso8601_date_strings$Iso8601$decoder);
-var $author$project$Main$thumbnailDecoder = A2(
+var $author$project$YouTube$thumbnailDecoder = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
 		['snippet', 'thumbnails', 'standard', 'url']),
 	$elm$json$Json$Decode$string);
-var $author$project$Main$titleDecoder = A2(
+var $author$project$YouTube$titleDecoder = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
 		['snippet', 'title']),
 	$elm$json$Json$Decode$string);
-var $author$project$Main$videoDecoder = function (channel) {
-	return A6(
-		$elm$json$Json$Decode$map5,
-		$author$project$Main$Video(channel),
-		$author$project$Main$idDecoder,
-		$author$project$Main$publishDecoder,
-		$author$project$Main$thumbnailDecoder,
-		$author$project$Main$titleDecoder,
-		$author$project$Main$descriptionDecoder);
+var $author$project$YouTube$videoIdDecoder = A2(
+	$elm$json$Json$Decode$map,
+	$elm$core$Basics$identity,
+	A2(
+		$elm$json$Json$Decode$at,
+		_List_fromArray(
+			['snippet', 'resourceId', 'videoId']),
+		$elm$json$Json$Decode$string));
+var $author$project$YouTube$videoApiDecoder = function (channel) {
+	return A7(
+		$elm$json$Json$Decode$map6,
+		$author$project$YouTube$Video,
+		$author$project$YouTube$videoIdDecoder,
+		$author$project$YouTube$publishDecoder,
+		$author$project$YouTube$thumbnailDecoder,
+		$author$project$YouTube$titleDecoder,
+		$author$project$YouTube$descriptionDecoder,
+		A2(
+			$elm$json$Json$Decode$andThen,
+			function (id) {
+				return $elm$json$Json$Decode$succeed(false);
+			},
+			$author$project$YouTube$videoIdDecoder));
 };
-var $author$project$Main$videoListDecoder = function (channel) {
+var $author$project$YouTube$uploadedVideosApiDecoder = function (channel) {
 	return A2(
-		$elm$json$Json$Decode$field,
-		'items',
-		$elm$json$Json$Decode$list(
-			$author$project$Main$videoDecoder(channel)));
+		$elm$json$Json$Decode$map,
+		A3($author$project$YouTube$Channel, channel.P, channel.w, channel.bi),
+		A2(
+			$elm$json$Json$Decode$field,
+			'items',
+			$elm$json$Json$Decode$list(
+				$author$project$YouTube$videoApiDecoder(channel))));
 };
 var $author$project$Main$getChannelVideos = F2(
 	function (apiKey, channel) {
 		return $elm$http$Http$get(
 			{
-				Q: A2(
+				O: A2(
 					$elm$http$Http$expectJson,
 					$author$project$Main$LoadedChannelVideos,
-					$author$project$Main$videoListDecoder(channel)),
-				Y: A2($author$project$Main$buildPlaylistUrl, apiKey, channel.bk)
+					$author$project$YouTube$uploadedVideosApiDecoder(channel)),
+				W: A2($author$project$YouTube$buildPlaylistUrl, apiKey, channel.bi)
 			});
 	});
-var $author$project$Main$init = function (flags) {
-	var model = $author$project$Main$decodeFlags(flags);
-	return _Utils_Tuple2(
-		model,
-		$elm$core$Platform$Cmd$batch(
-			A2(
-				$elm$core$List$map,
-				$author$project$Main$getChannelVideos(model.u),
-				$author$project$Main$decodeFlags(flags).m)));
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Main$init = function (args) {
+	var _v0 = $author$project$Main$decodeLocalStorage(args);
+	if ((!_v0.b.$) && (!_v0.b.a.$)) {
+		var app = _v0.a;
+		var problem = _v0.b;
+		var msg = problem.a.a;
+		return _Utils_Tuple2(
+			A2($author$project$Main$Overview, app, problem),
+			$elm$core$Platform$Cmd$none);
+	} else {
+		var app = _v0.a;
+		var maybeProblem = _v0.b;
+		return _Utils_Tuple2(
+			A2($author$project$Main$Overview, app, maybeProblem),
+			$elm$core$Platform$Cmd$batch(
+				A2(
+					$elm$core$List$map,
+					$author$project$Main$getChannelVideos(app.j),
+					app.d)));
+	}
 };
 var $author$project$Main$ClearError = function (a) {
 	return {$: 10, a: a};
@@ -7255,7 +7378,7 @@ var $elm$time$Time$Every = F2(
 	});
 var $elm$time$Time$State = F2(
 	function (taggers, processes) {
-		return {ax: processes, aL: taggers};
+		return {av: processes, aJ: taggers};
 	});
 var $elm$time$Time$init = $elm$core$Task$succeed(
 	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
@@ -7402,7 +7525,7 @@ var $elm$time$Time$spawnHelp = F3(
 	});
 var $elm$time$Time$onEffects = F3(
 	function (router, subs, _v0) {
-		var processes = _v0.ax;
+		var processes = _v0.av;
 		var rightStep = F3(
 			function (_v6, id, _v7) {
 				var spawns = _v7.a;
@@ -7469,7 +7592,7 @@ var $elm$time$Time$onEffects = F3(
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $elm$time$Time$onSelfMsg = F3(
 	function (router, interval, state) {
-		var _v0 = A2($elm$core$Dict$get, interval, state.aL);
+		var _v0 = A2($elm$core$Dict$get, interval, state.aJ);
 		if (_v0.$ === 1) {
 			return $elm$core$Task$succeed(state);
 		} else {
@@ -7518,12 +7641,17 @@ var $elm$time$Time$every = F2(
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
-	var _v0 = model.o;
-	if (_v0.$ === 1) {
-		return $elm$core$Platform$Sub$none;
+	if ((model.$ === 1) && (!model.b.$)) {
+		var app = model.a;
+		return A2($elm$time$Time$every, 50000, $author$project$Main$ClearError);
 	} else {
-		return A2($elm$time$Time$every, 2000, $author$project$Main$ClearError);
+		return $elm$core$Platform$Sub$none;
 	}
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$YouTube$encodeId = function (_v0) {
+	var i = _v0;
+	return $elm$json$Json$Encode$string(i);
 };
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
@@ -7538,72 +7666,34 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(0),
 			pairs));
 };
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Main$encodeChannel = function (channel) {
-	var _v0 = channel.a2;
-	var id = _v0;
+var $author$project$YouTube$encodeChannel = function (channel) {
 	return $elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'id',
-				$elm$json$Json$Encode$string(id)),
+				$author$project$YouTube$encodeId(channel.P)),
 				_Utils_Tuple2(
 				'title',
-				$elm$json$Json$Encode$string(channel.bi)),
+				$elm$json$Json$Encode$string(channel.w)),
 				_Utils_Tuple2(
 				'uploadPlaylistId',
-				$elm$json$Json$Encode$string(channel.bk))
+				$author$project$YouTube$encodeId(channel.bi))
 			]));
 };
-var $author$project$Main$encodeVideo = function (video) {
-	return $elm$json$Json$Encode$string(video.a2);
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $author$project$YouTube$encodeVideoDefinition = function (def) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'id',
+				$author$project$YouTube$encodeId(def.P)),
+				_Utils_Tuple2(
+				'seen',
+				$elm$json$Json$Encode$bool(def.E))
+			]));
 };
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var $author$project$Main$isVideoSeen = F2(
-	function (seenVideoIds, video) {
-		return A2($elm$core$List$member, video.a2, seenVideoIds);
-	});
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
 		return _Json_wrap(
@@ -7619,22 +7709,70 @@ var $author$project$Main$encodeModel = function (model) {
 			[
 				_Utils_Tuple2(
 				'channels',
-				A2($elm$json$Json$Encode$list, $author$project$Main$encodeChannel, model.m)),
+				A2($elm$json$Json$Encode$list, $author$project$YouTube$encodeChannel, model.d)),
 				_Utils_Tuple2(
 				'seen',
-				A2(
-					$elm$json$Json$Encode$list,
-					$author$project$Main$encodeVideo,
-					A2(
-						$elm$core$List$filter,
-						$author$project$Main$isVideoSeen(model.F),
-						model.I))),
+				A2($elm$json$Json$Encode$list, $author$project$YouTube$encodeVideoDefinition, model.E)),
 				_Utils_Tuple2(
 				'apiKey',
-				$elm$json$Json$Encode$string(model.u))
+				$elm$json$Json$Encode$string(model.j))
 			]));
 };
 var $author$project$Main$setStorage = _Platform_outgoingPort('setStorage', $elm$core$Basics$identity);
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $author$project$Main$flatten = function (list) {
+	return A3($elm$core$List$foldr, $elm$core$Basics$append, _List_Nil, list);
+};
+var $author$project$YouTube$makeDefinition = function (video) {
+	return {P: video.P, E: video.E};
+};
+var $author$project$Main$storedModelFromApp = function (_v0) {
+	var channels = _v0.d;
+	var apiKey = _v0.j;
+	var seenVideos = A2(
+		$elm$core$List$map,
+		$author$project$YouTube$makeDefinition,
+		$author$project$Main$flatten(
+			A2(
+				$elm$core$List$map,
+				function (chan) {
+					return A2(
+						$elm$core$List$filter,
+						function ($) {
+							return $.E;
+						},
+						chan.aM);
+				},
+				channels)));
+	return {
+		j: apiKey,
+		d: $author$project$Main$unique(channels),
+		E: seenVideos
+	};
+};
+var $author$project$Main$AlreadySubscribedError = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Main$HttpError = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Main$UrlParseError = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Main$Watching = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
 var $author$project$Main$LoadedChannelId = function (a) {
 	return {$: 8, a: a};
 };
@@ -7654,7 +7792,7 @@ var $author$project$Main$buildSearchUrl = F2(
 				]));
 	});
 var $elm$json$Json$Decode$index = _Json_decodeIndex;
-var $author$project$Main$searchDecoder = A2(
+var $author$project$YouTube$channelIdApiDecoder = A2(
 	$elm$json$Json$Decode$field,
 	'items',
 	A2(
@@ -7672,16 +7810,16 @@ var $author$project$Main$getChannelId = F2(
 	function (apiKey, displayName) {
 		return $elm$http$Http$get(
 			{
-				Q: A2($elm$http$Http$expectJson, $author$project$Main$LoadedChannelId, $author$project$Main$searchDecoder),
-				Y: A2($author$project$Main$buildSearchUrl, apiKey, displayName)
+				O: A2($elm$http$Http$expectJson, $author$project$Main$LoadedChannelId, $author$project$YouTube$channelIdApiDecoder),
+				W: A2($author$project$Main$buildSearchUrl, apiKey, displayName)
 			});
 	});
 var $author$project$Main$LoadedChannelInfo = function (a) {
 	return {$: 6, a: a};
 };
-var $author$project$Main$buildChannelUrl = F2(
+var $author$project$YouTube$buildChannelUrl = F2(
 	function (apiKey, _v0) {
-		var id = _v0;
+		var i = _v0;
 		return A3(
 			$elm$url$Url$Builder$crossOrigin,
 			'https://www.googleapis.com',
@@ -7690,48 +7828,40 @@ var $author$project$Main$buildChannelUrl = F2(
 			_List_fromArray(
 				[
 					A2($elm$url$Url$Builder$string, 'part', 'contentDetails,snippet'),
-					A2($elm$url$Url$Builder$string, 'id', id),
+					A2($elm$url$Url$Builder$string, 'id', i),
 					A2($elm$url$Url$Builder$string, 'key', apiKey)
 				]));
 	});
-var $author$project$Main$channelTitleDecoder = A2(
-	$elm$json$Json$Decode$field,
-	'items',
+var $author$project$YouTube$uploadPlaylistIdDecoder = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['contentDetails', 'relatedPlaylists', 'uploads']),
+	A2($elm$json$Json$Decode$map, $elm$core$Basics$identity, $elm$json$Json$Decode$string));
+var $author$project$YouTube$channelApiDecoder = A5(
+	$elm$json$Json$Decode$map4,
+	$author$project$YouTube$Channel,
 	A2(
-		$elm$json$Json$Decode$index,
-		0,
+		$elm$json$Json$Decode$field,
+		'items',
 		A2(
-			$elm$json$Json$Decode$at,
-			_List_fromArray(
-				['snippet', 'title']),
-			$elm$json$Json$Decode$string)));
-var $author$project$Main$uploadPlaylistIdDecoder = A2(
-	$elm$json$Json$Decode$field,
-	'items',
+			$elm$json$Json$Decode$index,
+			0,
+			A2($elm$json$Json$Decode$field, 'id', $author$project$YouTube$idDecoder))),
 	A2(
-		$elm$json$Json$Decode$index,
-		0,
-		A2(
-			$elm$json$Json$Decode$at,
-			_List_fromArray(
-				['contentDetails', 'relatedPlaylists', 'uploads']),
-			$elm$json$Json$Decode$string)));
-var $author$project$Main$channelDecoder = function (id) {
-	return A3(
-		$elm$json$Json$Decode$map2,
-		$author$project$Channel$Channel(id),
-		$author$project$Main$channelTitleDecoder,
-		$author$project$Main$uploadPlaylistIdDecoder);
-};
+		$elm$json$Json$Decode$field,
+		'items',
+		A2($elm$json$Json$Decode$index, 0, $author$project$YouTube$titleDecoder)),
+	A2(
+		$elm$json$Json$Decode$field,
+		'items',
+		A2($elm$json$Json$Decode$index, 0, $author$project$YouTube$uploadPlaylistIdDecoder)),
+	$elm$json$Json$Decode$succeed(_List_Nil));
 var $author$project$Main$getChannelInfo = F2(
 	function (apiKey, id) {
 		return $elm$http$Http$get(
 			{
-				Q: A2(
-					$elm$http$Http$expectJson,
-					$author$project$Main$LoadedChannelInfo,
-					$author$project$Main$channelDecoder(id)),
-				Y: A2($author$project$Main$buildChannelUrl, apiKey, id)
+				O: A2($elm$http$Http$expectJson, $author$project$Main$LoadedChannelInfo, $author$project$YouTube$channelApiDecoder),
+				W: A2($author$project$YouTube$buildChannelUrl, apiKey, id)
 			});
 	});
 var $author$project$Main$httpErrorToString = function (err) {
@@ -7751,7 +7881,30 @@ var $author$project$Main$httpErrorToString = function (err) {
 			return msg;
 	}
 };
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$YouTube$idFromUrl = function (url) {
+	if (!url.$) {
+		var i = url.a;
+		return $elm$core$Result$Ok(i);
+	} else {
+		var name = url.a;
+		return $elm$core$Result$Err(name + ' is not a YouTube ID');
+	}
+};
+var $author$project$YouTube$markVideoAsSeen = F2(
+	function (id, channel) {
+		return _Utils_update(
+			channel,
+			{
+				aM: A2(
+					$elm$core$List$map,
+					function (v) {
+						return _Utils_eq(v.P, id) ? _Utils_update(
+							v,
+							{E: true}) : v;
+					},
+					channel.aM)
+			});
+	});
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (!maybeValue.$) {
@@ -7761,24 +7914,24 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Channel$ChannelId = function (a) {
+var $author$project$YouTube$DisplayName = function (a) {
 	return {$: 1, a: a};
 };
-var $author$project$Channel$DisplayName = function (a) {
+var $author$project$YouTube$UrlId = function (a) {
 	return {$: 0, a: a};
 };
 var $elm$url$Url$Parser$Parser = $elm$core$Basics$identity;
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
-		return {A: frag, B: params, y: unvisited, t: value, D: visited};
+		return {y: frag, z: params, x: unvisited, s: value, B: visited};
 	});
 var $elm$url$Url$Parser$mapState = F2(
 	function (func, _v0) {
-		var visited = _v0.D;
-		var unvisited = _v0.y;
-		var params = _v0.B;
-		var frag = _v0.A;
-		var value = _v0.t;
+		var visited = _v0.B;
+		var unvisited = _v0.x;
+		var params = _v0.z;
+		var frag = _v0.y;
+		var value = _v0.s;
 		return A5(
 			$elm$url$Url$Parser$State,
 			visited,
@@ -7791,11 +7944,11 @@ var $elm$url$Url$Parser$map = F2(
 	function (subValue, _v0) {
 		var parseArg = _v0;
 		return function (_v1) {
-			var visited = _v1.D;
-			var unvisited = _v1.y;
-			var params = _v1.B;
-			var frag = _v1.A;
-			var value = _v1.t;
+			var visited = _v1.B;
+			var unvisited = _v1.x;
+			var params = _v1.z;
+			var frag = _v1.y;
+			var value = _v1.s;
 			return A2(
 				$elm$core$List$map,
 				$elm$url$Url$Parser$mapState(value),
@@ -7832,11 +7985,11 @@ var $elm$url$Url$Parser$oneOf = function (parsers) {
 };
 var $elm$url$Url$Parser$s = function (str) {
 	return function (_v0) {
-		var visited = _v0.D;
-		var unvisited = _v0.y;
-		var params = _v0.B;
-		var frag = _v0.A;
-		var value = _v0.t;
+		var visited = _v0.B;
+		var unvisited = _v0.x;
+		var params = _v0.z;
+		var frag = _v0.y;
+		var value = _v0.s;
 		if (!unvisited.b) {
 			return _List_Nil;
 		} else {
@@ -7869,11 +8022,11 @@ var $elm$url$Url$Parser$slash = F2(
 var $elm$url$Url$Parser$custom = F2(
 	function (tipe, stringToSomething) {
 		return function (_v0) {
-			var visited = _v0.D;
-			var unvisited = _v0.y;
-			var params = _v0.B;
-			var frag = _v0.A;
-			var value = _v0.t;
+			var visited = _v0.B;
+			var unvisited = _v0.x;
+			var params = _v0.z;
+			var frag = _v0.y;
+			var value = _v0.s;
 			if (!unvisited.b) {
 				return _List_Nil;
 			} else {
@@ -7899,19 +8052,19 @@ var $elm$url$Url$Parser$custom = F2(
 		};
 	});
 var $elm$url$Url$Parser$string = A2($elm$url$Url$Parser$custom, 'STRING', $elm$core$Maybe$Just);
-var $author$project$Channel$channelParser = $elm$url$Url$Parser$oneOf(
+var $author$project$YouTube$channelParser = $elm$url$Url$Parser$oneOf(
 	_List_fromArray(
 		[
 			A2(
 			$elm$url$Url$Parser$map,
-			$author$project$Channel$ChannelId,
+			$author$project$YouTube$UrlId,
 			A2(
 				$elm$url$Url$Parser$slash,
 				$elm$url$Url$Parser$s('channel'),
 				$elm$url$Url$Parser$string)),
 			A2(
 			$elm$url$Url$Parser$map,
-			$author$project$Channel$DisplayName,
+			$author$project$YouTube$DisplayName,
 			A2(
 				$elm$url$Url$Parser$slash,
 				$elm$url$Url$Parser$s('c'),
@@ -7925,12 +8078,12 @@ var $elm$url$Url$Parser$getFirstMatch = function (states) {
 		} else {
 			var state = states.a;
 			var rest = states.b;
-			var _v1 = state.y;
+			var _v1 = state.x;
 			if (!_v1.b) {
-				return $elm$core$Maybe$Just(state.t);
+				return $elm$core$Maybe$Just(state.s);
 			} else {
 				if ((_v1.a === '') && (!_v1.b.b)) {
-					return $elm$core$Maybe$Just(state.t);
+					return $elm$core$Maybe$Just(state.s);
 				} else {
 					var $temp$states = rest;
 					states = $temp$states;
@@ -8027,15 +8180,15 @@ var $elm$url$Url$Parser$parse = F2(
 				A5(
 					$elm$url$Url$Parser$State,
 					_List_Nil,
-					$elm$url$Url$Parser$preparePath(url.as),
-					$elm$url$Url$Parser$prepareQuery(url.az),
-					url.ah,
+					$elm$url$Url$Parser$preparePath(url.aq),
+					$elm$url$Url$Parser$prepareQuery(url.ax),
+					url.af,
 					$elm$core$Basics$identity)));
 	});
-var $author$project$Channel$parseChannelUrl = function (string) {
+var $author$project$YouTube$parseChannelUrl = function (string) {
 	return A2(
 		$elm$core$Maybe$andThen,
-		$elm$url$Url$Parser$parse($author$project$Channel$channelParser),
+		$elm$url$Url$Parser$parse($author$project$YouTube$channelParser),
 		$elm$url$Url$fromString(string));
 };
 var $author$project$Main$Scroll = function (a) {
@@ -8064,192 +8217,383 @@ var $author$project$Main$scrollToTop = A2(
 	$elm$core$Task$attempt,
 	$author$project$Main$Scroll,
 	A2($elm$browser$Browser$Dom$setViewport, 0, 0));
-var $author$project$Main$update = F2(
-	function (msg, model) {
-		switch (msg.$) {
-			case 0:
-				var _v1 = $author$project$Channel$parseChannelUrl(model.s);
-				if (_v1.$ === 1) {
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								o: $elm$core$Maybe$Just('\'' + (model.s + '\' isn\'t a valid YouTube URL.')),
-								s: ''
-							}),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					if (!_v1.a.$) {
-						var name = _v1.a.a;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{s: ''}),
-							A2($author$project$Main$getChannelId, model.u, name));
-					} else {
-						var id = _v1.a.a;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{s: ''}),
-							A2($author$project$Main$getChannelInfo, model.u, id));
-					}
-				}
-			case 1:
-				var newChannelUrl = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{s: newChannelUrl}),
-					$elm$core$Platform$Cmd$none);
-			case 2:
-				var channel = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							m: A2(
-								$elm$core$List$filter,
-								function (c) {
-									return !_Utils_eq(c, channel);
-								},
-								model.m)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 3:
-				var video = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							z: $elm$core$Maybe$Just(video)
-						}),
-					$author$project$Main$scrollToTop);
-			case 4:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{z: $elm$core$Maybe$Nothing}),
-					$elm$core$Platform$Cmd$none);
-			case 5:
-				var video = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							z: $elm$core$Maybe$Nothing,
-							F: A2($elm$core$List$cons, video.a2, model.F)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 8:
-				var result = msg.a;
-				if (!result.$) {
-					var id = result.a;
-					return _Utils_Tuple2(
-						model,
-						A2($author$project$Main$getChannelInfo, model.u, id));
-				} else {
-					var err = result.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								o: $elm$core$Maybe$Just(
-									$author$project$Main$httpErrorToString(err))
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
-			case 7:
-				var result = msg.a;
-				if (!result.$) {
-					var videos = result.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								I: _Utils_ap(model.I, videos)
-							}),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					var err = result.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								o: $elm$core$Maybe$Just(
-									$author$project$Main$httpErrorToString(err))
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
-			case 6:
-				var result = msg.a;
-				if (!result.$) {
-					var channel = result.a;
-					return A2($elm$core$List$member, channel, model.m) ? _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								o: $elm$core$Maybe$Just('Already subscribed to ' + (channel.bi + '.'))
-							}),
-						$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								m: _Utils_ap(
-									A2(
-										$elm$core$List$filter,
-										function (c) {
-											return !_Utils_eq(c.a2, channel.a2);
-										},
-										model.m),
-									_List_fromArray(
-										[channel]))
-							}),
-						A2($author$project$Main$getChannelVideos, model.u, channel));
-				} else {
-					var err = result.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								o: $elm$core$Maybe$Just(
-									$author$project$Main$httpErrorToString(err))
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
-			case 9:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{o: $elm$core$Maybe$Nothing}),
-					$elm$core$Platform$Cmd$none);
+var $author$project$Main$updateChannel = F2(
+	function (_new, old) {
+		return _Utils_eq(old.P, _new.P) ? _new : old;
+	});
+var $author$project$YouTube$markRestOfVideosAsSeen = F2(
+	function (seenIds, channel) {
+		markRestOfVideosAsSeen:
+		while (true) {
+			if (!seenIds.b) {
+				return channel;
+			} else {
+				var video = seenIds.a;
+				var rest = seenIds.b;
+				var $temp$seenIds = rest,
+					$temp$channel = A2($author$project$YouTube$markVideoAsSeen, video, channel);
+				seenIds = $temp$seenIds;
+				channel = $temp$channel;
+				continue markRestOfVideosAsSeen;
+			}
 		}
 	});
+var $author$project$YouTube$updateVideosWithActivity = F2(
+	function (_v0, channel) {
+		var seen = _v0.E;
+		var seenIds = A2(
+			$elm$core$List$map,
+			function (_v1) {
+				var id = _v1.a;
+				var s = _v1.b;
+				return id;
+			},
+			A2(
+				$elm$core$List$filter,
+				function (_v2) {
+					var id = _v2.a;
+					var s = _v2.b;
+					return s;
+				},
+				$elm$core$Dict$toList(seen)));
+		return A2($author$project$YouTube$markRestOfVideosAsSeen, seenIds, channel);
+	});
+var $author$project$Main$update = F2(
+	function (msg, model) {
+		var _v0 = _Utils_Tuple2(msg, model);
+		_v0$14:
+		while (true) {
+			switch (_v0.a.$) {
+				case 0:
+					if (_v0.b.$ === 1) {
+						var url = _v0.a.a;
+						var _v1 = _v0.b;
+						var app = _v1.a;
+						var problem = _v1.b;
+						return _Utils_Tuple2(
+							A2(
+								$author$project$Main$Overview,
+								_Utils_update(
+									app,
+									{C: url}),
+								problem),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						break _v0$14;
+					}
+				case 1:
+					if (_v0.b.$ === 1) {
+						var _v2 = _v0.a;
+						var _v3 = _v0.b;
+						var app = _v3.a;
+						var problem = _v3.b;
+						var _v4 = $author$project$YouTube$parseChannelUrl(app.C);
+						if (_v4.$ === 1) {
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Main$Overview,
+									app,
+									$elm$core$Maybe$Just(
+										$author$project$Main$UrlParseError(app.C + ' isn\'t a valid YouTube channel URL.'))),
+								$elm$core$Platform$Cmd$none);
+						} else {
+							if (_v4.a.$ === 1) {
+								var name = _v4.a.a;
+								return _Utils_Tuple2(
+									model,
+									A2($author$project$Main$getChannelId, app.j, name));
+							} else {
+								var urlId = _v4.a;
+								var _v5 = $author$project$YouTube$idFromUrl(urlId);
+								if (!_v5.$) {
+									var id = _v5.a;
+									return _Utils_Tuple2(
+										model,
+										A2($author$project$Main$getChannelInfo, app.j, id));
+								} else {
+									var err = _v5.a;
+									return _Utils_Tuple2(
+										A2(
+											$author$project$Main$Overview,
+											app,
+											$elm$core$Maybe$Just(
+												$author$project$Main$UrlParseError(err))),
+										$elm$core$Platform$Cmd$none);
+								}
+							}
+						}
+					} else {
+						break _v0$14;
+					}
+				case 2:
+					if (_v0.b.$ === 1) {
+						var channel = _v0.a.a;
+						var _v6 = _v0.b;
+						var app = _v6.a;
+						var problem = _v6.b;
+						return _Utils_Tuple2(
+							A2(
+								$author$project$Main$Overview,
+								_Utils_update(
+									app,
+									{
+										d: A2(
+											$elm$core$List$filter,
+											function (c) {
+												return !_Utils_eq(c, channel);
+											},
+											app.d)
+									}),
+								problem),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						break _v0$14;
+					}
+				case 3:
+					if (_v0.b.$ === 1) {
+						var video = _v0.a.a;
+						var _v7 = _v0.b;
+						var app = _v7.a;
+						var problem = _v7.b;
+						return _Utils_Tuple2(
+							A2($author$project$Main$Watching, app, video),
+							$author$project$Main$scrollToTop);
+					} else {
+						break _v0$14;
+					}
+				case 4:
+					if (!_v0.b.$) {
+						var _v8 = _v0.a;
+						var _v9 = _v0.b;
+						var app = _v9.a;
+						var video = _v9.b;
+						return _Utils_Tuple2(
+							A2($author$project$Main$Overview, app, $elm$core$Maybe$Nothing),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						break _v0$14;
+					}
+				case 5:
+					if (!_v0.b.$) {
+						var _v10 = _v0.a;
+						var _v11 = _v0.b;
+						var app = _v11.a;
+						var video = _v11.b;
+						return _Utils_Tuple2(
+							A2(
+								$author$project$Main$Overview,
+								_Utils_update(
+									app,
+									{
+										d: A2(
+											$elm$core$List$map,
+											$author$project$YouTube$markVideoAsSeen(video.P),
+											app.d)
+									}),
+								$elm$core$Maybe$Nothing),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						break _v0$14;
+					}
+				case 8:
+					if (!_v0.b.$) {
+						var result = _v0.a.a;
+						var _v12 = _v0.b;
+						var app = _v12.a;
+						var video = _v12.b;
+						if (!result.$) {
+							var id = result.a;
+							return _Utils_Tuple2(
+								model,
+								A2($author$project$Main$getChannelInfo, app.j, id));
+						} else {
+							var err = result.a;
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var result = _v0.a.a;
+						var _v14 = _v0.b;
+						var app = _v14.a;
+						var problem = _v14.b;
+						if (!result.$) {
+							var id = result.a;
+							return _Utils_Tuple2(
+								model,
+								A2($author$project$Main$getChannelInfo, app.j, id));
+						} else {
+							var err = result.a;
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Main$Overview,
+									app,
+									$elm$core$Maybe$Just(
+										$author$project$Main$HttpError(
+											$author$project$Main$httpErrorToString(err)))),
+								$elm$core$Platform$Cmd$none);
+						}
+					}
+				case 7:
+					if (!_v0.b.$) {
+						var result = _v0.a.a;
+						var _v16 = _v0.b;
+						var app = _v16.a;
+						var video = _v16.b;
+						if (!result.$) {
+							var channel = result.a;
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Main$Watching,
+									_Utils_update(
+										app,
+										{
+											d: A2(
+												$elm$core$List$map,
+												$author$project$Main$updateChannel(channel),
+												app.d)
+										}),
+									video),
+								$elm$core$Platform$Cmd$none);
+						} else {
+							var err = result.a;
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var result = _v0.a.a;
+						var _v18 = _v0.b;
+						var app = _v18.a;
+						var problem = _v18.b;
+						if (!result.$) {
+							var channel = result.a;
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Main$Overview,
+									_Utils_update(
+										app,
+										{
+											d: A2(
+												$elm$core$List$map,
+												$author$project$Main$updateChannel(
+													A2($author$project$YouTube$updateVideosWithActivity, app.N, channel)),
+												app.d)
+										}),
+									problem),
+								$elm$core$Platform$Cmd$none);
+						} else {
+							var err = result.a;
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Main$Overview,
+									app,
+									$elm$core$Maybe$Just(
+										$author$project$Main$HttpError(
+											$author$project$Main$httpErrorToString(err)))),
+								$elm$core$Platform$Cmd$none);
+						}
+					}
+				case 6:
+					if (!_v0.b.$) {
+						var result = _v0.a.a;
+						var _v20 = _v0.b;
+						var app = _v20.a;
+						var video = _v20.b;
+						if (!result.$) {
+							var channel = result.a;
+							return A2($elm$core$List$member, channel, app.d) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+								A2(
+									$author$project$Main$Watching,
+									_Utils_update(
+										app,
+										{
+											d: A2($elm$core$List$cons, channel, app.d)
+										}),
+									video),
+								A2($author$project$Main$getChannelVideos, app.j, channel));
+						} else {
+							var err = result.a;
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var result = _v0.a.a;
+						var _v22 = _v0.b;
+						var app = _v22.a;
+						var problem = _v22.b;
+						if (!result.$) {
+							var channel = result.a;
+							return A2($elm$core$List$member, channel, app.d) ? _Utils_Tuple2(
+								A2(
+									$author$project$Main$Overview,
+									app,
+									$elm$core$Maybe$Just(
+										$author$project$Main$AlreadySubscribedError('Already subscribed to ' + (channel.w + '.')))),
+								$elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+								A2(
+									$author$project$Main$Overview,
+									_Utils_update(
+										app,
+										{
+											d: A2($elm$core$List$cons, channel, app.d)
+										}),
+									problem),
+								A2($author$project$Main$getChannelVideos, app.j, channel));
+						} else {
+							var err = result.a;
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Main$Overview,
+									app,
+									$elm$core$Maybe$Just(
+										$author$project$Main$HttpError(
+											$author$project$Main$httpErrorToString(err)))),
+								$elm$core$Platform$Cmd$none);
+						}
+					}
+				case 9:
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				default:
+					if (_v0.b.$ === 1) {
+						var _v24 = _v0.b;
+						var app = _v24.a;
+						var problem = _v24.b;
+						return _Utils_Tuple2(
+							A2($author$project$Main$Overview, app, $elm$core$Maybe$Nothing),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						break _v0$14;
+					}
+			}
+		}
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	});
 var $author$project$Main$updateWithStorage = F2(
-	function (msg, prevModel) {
-		var _v0 = A2($author$project$Main$update, msg, prevModel);
-		var newModel = _v0.a;
-		var cmds = _v0.b;
-		return _Utils_Tuple2(
-			newModel,
-			$elm$core$Platform$Cmd$batch(
-				_List_fromArray(
-					[
-						$author$project$Main$setStorage(
-						$author$project$Main$encodeModel(newModel)),
-						cmds
-					])));
+	function (msg, prev) {
+		var _v0 = A2($author$project$Main$update, msg, prev);
+		var _new = _v0.a;
+		var cmd = _v0.b;
+		if (_new.$ === 1) {
+			var app = _new.a;
+			var problem = _new.b;
+			return _Utils_Tuple2(
+				_new,
+				$elm$core$Platform$Cmd$batch(
+					_List_fromArray(
+						[
+							$author$project$Main$setStorage(
+							$author$project$Main$encodeModel(
+								$author$project$Main$storedModelFromApp(app))),
+							cmd
+						])));
+		} else {
+			return _Utils_Tuple2(_new, cmd);
+		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Main$AddChannel = {$: 0};
+var $author$project$Main$AddChannel = {$: 1};
 var $elm$browser$Browser$Document = F2(
 	function (title, body) {
-		return {aW: body, bi: title};
+		return {aU: body, w: title};
 	});
-var $author$project$Main$UpdateNewChannel = function (a) {
-	return {$: 1, a: a};
+var $author$project$Main$UpdateChannelUrl = function (a) {
+	return {$: 0, a: a};
 };
 var $elm$html$Html$aside = _VirtualDom_node('aside');
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -8318,12 +8662,12 @@ var $elm$html$Html$Events$onSubmit = function (msg) {
 			$elm$json$Json$Decode$succeed(msg)));
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$core$List$sortBy = _List_sortBy;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$core$String$toLower = _String_toLower;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $elm$core$List$sortBy = _List_sortBy;
+var $elm$core$String$toLower = _String_toLower;
 var $author$project$Main$RemoveChannel = function (a) {
 	return {$: 2, a: a};
 };
@@ -8359,7 +8703,7 @@ var $author$project$Main$viewChannel = function (channel) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text(channel.bi)
+						$elm$html$Html$text(channel.w)
 					])),
 				A2(
 				$elm$html$Html$button,
@@ -8374,28 +8718,65 @@ var $author$project$Main$viewChannel = function (channel) {
 					]))
 			]));
 };
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0;
-	return millis;
-};
-var $author$project$Main$channelVideos = F2(
-	function (allVideos, channel) {
-		return $elm$core$List$reverse(
+var $author$project$Main$viewChannelList = function (channels) {
+	return A2(
+		$elm$core$List$map,
+		$author$project$Main$viewChannel,
+		A2(
+			$elm$core$List$sortBy,
 			A2(
-				$elm$core$List$sortBy,
-				A2(
-					$elm$core$Basics$composeR,
-					function ($) {
-						return $.U;
-					},
-					$elm$time$Time$posixToMillis),
-				A2(
-					$elm$core$List$filter,
-					function (v) {
-						return _Utils_eq(v.P, channel);
-					},
-					allVideos)));
-	});
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.w;
+				},
+				$elm$core$String$toLower),
+			channels));
+};
+var $elm$html$Html$p = _VirtualDom_node('p');
+var $author$project$Main$viewErrorMsg = function (maybeProblem) {
+	if (!maybeProblem.$) {
+		switch (maybeProblem.a.$) {
+			case 0:
+				var msg = maybeProblem.a.a;
+				return A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Error in your local storage: ' + msg)
+						]));
+			case 1:
+				var msg = maybeProblem.a.a;
+				return A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(msg)
+						]));
+			case 2:
+				var msg = maybeProblem.a.a;
+				return A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(msg)
+						]));
+			default:
+				var msg = maybeProblem.a.a;
+				return A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(msg)
+						]));
+		}
+	} else {
+		return $elm$html$Html$text('');
+	}
+};
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $author$project$Main$WatchVideo = function (a) {
 	return {$: 3, a: a};
@@ -8411,6 +8792,10 @@ var $elm$time$Time$flooredDiv = F2(
 	function (numerator, denominator) {
 		return $elm$core$Basics$floor(numerator / denominator);
 	});
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0;
+	return millis;
+};
 var $elm$time$Time$toAdjustedMinutesHelp = F3(
 	function (defaultOffset, posixMinutes, eras) {
 		toAdjustedMinutesHelp:
@@ -8420,7 +8805,7 @@ var $elm$time$Time$toAdjustedMinutesHelp = F3(
 			} else {
 				var era = eras.a;
 				var olderEras = eras.b;
-				if (_Utils_cmp(era.W, posixMinutes) < 0) {
+				if (_Utils_cmp(era.U, posixMinutes) < 0) {
 					return posixMinutes + era.b;
 				} else {
 					var $temp$defaultOffset = defaultOffset,
@@ -8458,17 +8843,17 @@ var $elm$time$Time$toCivil = function (minutes) {
 	var month = mp + ((mp < 10) ? 3 : (-9));
 	var year = yearOfEra + (era * 400);
 	return {
-		ac: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
-		aq: month,
-		aT: year + ((month <= 2) ? 1 : 0)
+		aa: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		ao: month,
+		aR: year + ((month <= 2) ? 1 : 0)
 	};
 };
 var $elm$time$Time$toDay = F2(
 	function (zone, time) {
 		return $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).ac;
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aa;
 	});
-var $author$project$Main$toEnglishMonth = function (month) {
+var $author$project$YouTube$toEnglishMonth = function (month) {
 	switch (month) {
 		case 0:
 			return 'January';
@@ -8511,7 +8896,7 @@ var $elm$time$Time$Sep = 8;
 var $elm$time$Time$toMonth = F2(
 	function (zone, time) {
 		var _v0 = $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aq;
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).ao;
 		switch (_v0) {
 			case 1:
 				return 0;
@@ -8542,24 +8927,23 @@ var $elm$time$Time$toMonth = F2(
 var $elm$time$Time$toYear = F2(
 	function (zone, time) {
 		return $elm$time$Time$toCivil(
-			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aT;
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aR;
 	});
 var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
-var $author$project$Main$toDateString = function (date) {
-	return $author$project$Main$toEnglishMonth(
+var $author$project$YouTube$toDateString = function (date) {
+	return $author$project$YouTube$toEnglishMonth(
 		A2($elm$time$Time$toMonth, $elm$time$Time$utc, date)) + (' ' + ($elm$core$String$fromInt(
 		A2($elm$time$Time$toDay, $elm$time$Time$utc, date)) + (', ' + $elm$core$String$fromInt(
 		A2($elm$time$Time$toYear, $elm$time$Time$utc, date)))));
 };
 var $author$project$Main$viewVideoThumbnail = F2(
-	function (video, seen) {
+	function (channel, video) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$id('video-' + video.a2),
 					$elm$html$Html$Attributes$class(
-					seen ? 'video-thumbnail seen' : 'video-thumbnail'),
+					video.E ? 'video-thumbnail seen' : 'video-thumbnail'),
 					$elm$html$Html$Events$onClick(
 					$author$project$Main$WatchVideo(video))
 				]),
@@ -8569,7 +8953,7 @@ var $author$project$Main$viewVideoThumbnail = F2(
 					$elm$html$Html$img,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$src(video.aM)
+							$elm$html$Html$Attributes$src(video.bf)
 						]),
 					_List_Nil),
 					A2(
@@ -8580,7 +8964,7 @@ var $author$project$Main$viewVideoThumbnail = F2(
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text(video.bi)
+							$elm$html$Html$text(video.w)
 						])),
 					A2(
 					$elm$html$Html$span,
@@ -8591,59 +8975,47 @@ var $author$project$Main$viewVideoThumbnail = F2(
 					_List_fromArray(
 						[
 							$elm$html$Html$text(
-							video.P.bi + (' (' + ($author$project$Main$toDateString(video.U) + ')')))
+							channel.w + (' (' + ($author$project$YouTube$toDateString(video.a8) + ')')))
 						]))
 				]));
 	});
-var $author$project$Main$viewChannelColumn = F3(
-	function (allVideos, seenVideoIds, channel) {
-		var videos = A2($author$project$Main$channelVideos, allVideos, channel);
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('channel-' + channel.bi)
-				]),
+var $author$project$Main$viewChannelColumn = function (channel) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('channel-' + channel.w)
+			]),
+		A2(
+			$elm$core$List$cons,
 			A2(
-				$elm$core$List$cons,
-				A2(
-					$elm$html$Html$h2,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(channel.bi)
-						])),
-				A3(
-					$elm$core$List$map2,
-					$author$project$Main$viewVideoThumbnail,
-					videos,
-					A2(
-						$elm$core$List$map,
-						$author$project$Main$isVideoSeen(seenVideoIds),
-						videos))));
-	});
-var $elm$html$Html$p = _VirtualDom_node('p');
-var $author$project$Main$viewErrorMsg = function (maybeMsg) {
-	if (maybeMsg.$ === 1) {
-		return $elm$html$Html$text('');
-	} else {
-		var msg = maybeMsg.a;
-		return A2(
-			$elm$html$Html$p,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('error-msg')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(msg)
-				]));
-	}
+				$elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(channel.w)
+					])),
+			A2(
+				$elm$core$List$map,
+				$author$project$Main$viewVideoThumbnail(channel),
+				channel.aM)));
+};
+var $author$project$Main$viewVideoList = function (channels) {
+	return A2(
+		$elm$core$List$map,
+		$author$project$Main$viewChannelColumn,
+		A2(
+			$elm$core$List$sortBy,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.w;
+				},
+				$elm$core$String$toLower),
+			channels));
 };
 var $author$project$Main$ExitVideo = {$: 4};
-var $author$project$Main$FinishVideo = function (a) {
-	return {$: 5, a: a};
-};
+var $author$project$Main$FinishVideo = {$: 5};
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
 		return A2(
@@ -8653,8 +9025,10 @@ var $elm$virtual_dom$VirtualDom$attribute = F2(
 	});
 var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $elm$html$Html$iframe = _VirtualDom_node('iframe');
-var $author$project$Main$videoSrc = function (video) {
-	return 'https://www.youtube-nocookie.com/embed/' + video.a2;
+var $author$project$YouTube$src = function (video) {
+	var _v0 = video.P;
+	var i = _v0;
+	return 'https://www.youtube-nocookie.com/embed/' + i;
 };
 var $author$project$Main$viewVideoPlayer = function (maybeVideo) {
 	if (maybeVideo.$ === 1) {
@@ -8682,7 +9056,7 @@ var $author$project$Main$viewVideoPlayer = function (maybeVideo) {
 							_List_fromArray(
 								[
 									$elm$html$Html$Attributes$src(
-									$author$project$Main$videoSrc(video)),
+									$author$project$YouTube$src(video)),
 									A2($elm$html$Html$Attributes$attribute, 'frameborder', '0'),
 									A2($elm$html$Html$Attributes$attribute, 'allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture'),
 									A2($elm$html$Html$Attributes$attribute, 'allowfullscreen', 'true')
@@ -8693,8 +9067,7 @@ var $author$project$Main$viewVideoPlayer = function (maybeVideo) {
 					$elm$html$Html$button,
 					_List_fromArray(
 						[
-							$elm$html$Html$Events$onClick(
-							$author$project$Main$FinishVideo(video))
+							$elm$html$Html$Events$onClick($author$project$Main$FinishVideo)
 						]),
 					_List_fromArray(
 						[
@@ -8745,18 +9118,15 @@ var $author$project$Main$view = function (model) {
 									[
 										$elm$html$Html$Attributes$id('channel-list')
 									]),
-								A2(
-									$elm$core$List$map,
-									$author$project$Main$viewChannel,
-									A2(
-										$elm$core$List$sortBy,
-										A2(
-											$elm$core$Basics$composeR,
-											function ($) {
-												return $.bi;
-											},
-											$elm$core$String$toLower),
-										model.m))),
+								function () {
+									if (!model.$) {
+										var channels = model.a.d;
+										return $author$project$Main$viewChannelList(channels);
+									} else {
+										var channels = model.a.d;
+										return $author$project$Main$viewChannelList(channels);
+									}
+								}()),
 								A2(
 								$elm$html$Html$form,
 								_List_fromArray(
@@ -8772,8 +9142,7 @@ var $author$project$Main$view = function (model) {
 												$elm$html$Html$Attributes$type_('text'),
 												$elm$html$Html$Attributes$name('url'),
 												$elm$html$Html$Attributes$placeholder('Channel URL'),
-												$elm$html$Html$Events$onInput($author$project$Main$UpdateNewChannel),
-												$elm$html$Html$Attributes$value(model.s)
+												$elm$html$Html$Events$onInput($author$project$Main$UpdateChannelUrl)
 											]),
 										_List_Nil),
 										A2(
@@ -8792,8 +9161,7 @@ var $author$project$Main$view = function (model) {
 							[
 								$elm$html$Html$Attributes$class(
 								function () {
-									var _v0 = model.z;
-									if (!_v0.$) {
+									if (!model.$) {
 										return 'content blurred';
 									} else {
 										return 'content';
@@ -8809,30 +9177,44 @@ var $author$project$Main$view = function (model) {
 									[
 										$elm$html$Html$text('Videos')
 									])),
-								$author$project$Main$viewErrorMsg(model.o),
+								$author$project$Main$viewErrorMsg(
+								function () {
+									if (model.$ === 1) {
+										var problem = model.b;
+										return problem;
+									} else {
+										return $elm$core$Maybe$Nothing;
+									}
+								}()),
 								A2(
 								$elm$html$Html$div,
 								_List_fromArray(
 									[
 										$elm$html$Html$Attributes$id('video-list')
 									]),
-								A2(
-									$elm$core$List$map,
-									A2($author$project$Main$viewChannelColumn, model.I, model.F),
-									A2(
-										$elm$core$List$sortBy,
-										A2(
-											$elm$core$Basics$composeR,
-											function ($) {
-												return $.bi;
-											},
-											$elm$core$String$toLower),
-										model.m)))
-							]))
-					])),
-				$author$project$Main$viewVideoPlayer(model.z)
+								function () {
+									if (!model.$) {
+										var channels = model.a.d;
+										return $author$project$Main$viewVideoList(channels);
+									} else {
+										var channels = model.a.d;
+										return $author$project$Main$viewVideoList(channels);
+									}
+								}())
+							])),
+						$author$project$Main$viewVideoPlayer(
+						function () {
+							if (!model.$) {
+								var app = model.a;
+								var video = model.b;
+								return $elm$core$Maybe$Just(video);
+							} else {
+								return $elm$core$Maybe$Nothing;
+							}
+						}())
+					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
-	{a4: $author$project$Main$init, bg: $author$project$Main$subscriptions, bj: $author$project$Main$updateWithStorage, bl: $author$project$Main$view});
+	{a1: $author$project$Main$init, be: $author$project$Main$subscriptions, bh: $author$project$Main$updateWithStorage, bj: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$value)(0)}});}(this));

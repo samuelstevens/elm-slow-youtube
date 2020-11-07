@@ -24,6 +24,7 @@
 		const app = Elm.Main.init({ node: document.getElementById('myapp'), flags: flags });
 
 		app.ports.setStorage.subscribe(function (state) {
+			console.log(state);
 			localStorage.setItem('elm-slow-youtube-state', JSON.stringify(state));
 		});
 	</script>

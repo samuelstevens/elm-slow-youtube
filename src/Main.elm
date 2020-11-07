@@ -1,14 +1,12 @@
-port module Main exposing (Model, Msg(..), Video, channelVideos, init, main, update, view, viewChannel, viewChannelColumn, viewVideoPlayer, viewVideoThumbnail)
+port module Main exposing (..)
 
-import Array exposing (get)
 import Browser
 import Browser.Dom
-import Channel exposing (Channel)
+import Dict exposing (Dict)
 import Html exposing (Html, aside, button, div, form, h1, h2, h3, iframe, img, input, main_, span)
 import Html.Attributes exposing (attribute, class, id, name, placeholder, src, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Events
 import Http
-import Iso8601
 import Json.Decode as D
 import Json.Encode as E
 import Set exposing (Set)
@@ -17,6 +15,7 @@ import Time
 import Url
 import Url.Builder
 import Url.Parser exposing ((</>))
+import YouTube
 
 
 
@@ -37,51 +36,68 @@ main =
 -- MODEL
 
 
-type alias Video =
-    { channel : Channel
-    , id : String
-    , publishedAt : Time.Posix
-    , thumbnailUrl : String
-    , title : String
-    , description : String
-    , seen : Bool
-    }
+type Problem
+    = StorageError String
+    | UrlParseError String
+    | HttpError String
+    | AlreadySubscribedError String
 
 
-type alias Model =
-    { videos : List Video
-    , currentVideo : Maybe Video
-    , newChannelUrl : String
-    , errorMsg : Maybe String
-    , channels : List Channel
-    , seenVideos : Set String
+type alias App =
+    { channels : List YouTube.Channel
     , apiKey : String
+    , activity : YouTube.Activity
+
+    -- UI
+    , channelUrl : String
     }
 
 
-decodeFlags : E.Value -> Model
-decodeFlags flags =
-    case D.decodeValue modelDecoder flags of
+type alias StoredModel =
+    { apiKey : String
+    , channels : List YouTube.Channel -- List not for order, but because Channel.Id is not comparable
+    , seen : List YouTube.VideoDefinition
+    }
+
+
+storedModelFromApp : App -> StoredModel
+storedModelFromApp { channels, apiKey } =
+    let
+        seenVideos =
+            List.map YouTube.makeDefinition (flatten (List.map (\chan -> List.filter .seen chan.videos) channels))
+    in
+    { channels = unique channels, apiKey = apiKey, seen = seenVideos }
+
+
+type Model
+    = Watching App YouTube.Video
+    | Overview App (Maybe Problem)
+
+
+decodeLocalStorage : E.Value -> ( App, Maybe Problem )
+decodeLocalStorage args =
+    case D.decodeValue storedModelDecoder args of
         Ok model ->
-            model
+            ( { channels = unique model.channels, apiKey = model.apiKey, activity = YouTube.activityFromVideoDefinitions model.seen, channelUrl = "" }, Nothing )
 
         Err err ->
-            { channels = [], videos = [], newChannelUrl = "", errorMsg = Just (D.errorToString err), currentVideo = Nothing, seenVideos = Set.empty, apiKey = "" }
+            ( { channels = [], apiKey = "", activity = YouTube.newActivity, channelUrl = "" }, Just (StorageError (D.errorToString err)) )
 
 
 init : E.Value -> ( Model, Cmd Msg )
-init flags =
-    let
-        model =
-            decodeFlags flags
-    in
-    ( model
-    , Cmd.batch
-        (List.map
-            (getChannelVideos model.apiKey model.seenVideos)
-            (flags |> decodeFlags |> .channels)
-        )
-    )
+init args =
+    case decodeLocalStorage args of
+        ( app, (Just (StorageError msg)) as problem ) ->
+            ( Overview app problem, Cmd.none )
+
+        ( app, maybeProblem ) ->
+            ( Overview app maybeProblem
+            , Cmd.batch
+                (List.map
+                    (getChannelVideos app.apiKey)
+                    app.channels
+                )
+            )
 
 
 
@@ -89,89 +105,131 @@ init flags =
 
 
 type Msg
-    = AddChannel
-    | UpdateNewChannel String
-    | RemoveChannel Channel
-    | WatchVideo Video
+    = UpdateChannelUrl String
+    | AddChannel
+    | RemoveChannel YouTube.Channel
+    | WatchVideo YouTube.Video
     | ExitVideo
-    | FinishVideo Video
-    | LoadedChannelInfo (Result Http.Error Channel)
-    | LoadedChannelVideos (Result Http.Error (List Video))
-    | LoadedChannelId (Result Http.Error Channel.Id)
+    | FinishVideo
+    | LoadedChannelInfo (Result Http.Error YouTube.Channel)
+    | LoadedChannelVideos (Result Http.Error YouTube.Channel)
+    | LoadedChannelId (Result Http.Error YouTube.Id)
     | Scroll (Result Browser.Dom.Error ())
     | ClearError Time.Posix
 
 
+
+-- https://m.youtube.com/channel/UCZHmQk67mSJgfCCTn7xBfew
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        AddChannel ->
-            case Channel.parseChannelUrl model.newChannelUrl of
+    case ( msg, model ) of
+        ( UpdateChannelUrl url, Overview app problem ) ->
+            ( Overview { app | channelUrl = url } problem, Cmd.none )
+
+        ( AddChannel, Overview app problem ) ->
+            case YouTube.parseChannelUrl app.channelUrl of
                 Nothing ->
-                    ( { model | newChannelUrl = "", errorMsg = Just ("'" ++ model.newChannelUrl ++ "' isn't a valid YouTube URL.") }
-                    , Cmd.none
-                    )
+                    ( Overview app (Just (UrlParseError (app.channelUrl ++ " isn't a valid YouTube channel URL."))), Cmd.none )
 
                 -- need to send a request to get the channel id
-                Just (Channel.DisplayName name) ->
-                    ( { model | newChannelUrl = "" }, getChannelId model.apiKey name )
+                Just (YouTube.DisplayName name) ->
+                    ( model, getChannelId app.apiKey name )
 
-                Just (Channel.ChannelId id) ->
-                    ( { model | newChannelUrl = "" }, getChannelInfo model.apiKey (Channel.Id id) )
+                Just urlId ->
+                    case YouTube.idFromUrl urlId of
+                        Ok id ->
+                            ( model, getChannelInfo app.apiKey id )
 
-        UpdateNewChannel newChannelUrl ->
-            ( { model | newChannelUrl = newChannelUrl }, Cmd.none )
+                        Err err ->
+                            ( Overview app (Just (UrlParseError err)), Cmd.none )
 
-        RemoveChannel channel ->
-            ( { model | channels = List.filter (\c -> c /= channel) model.channels }, Cmd.none )
+        ( RemoveChannel channel, Overview app problem ) ->
+            ( Overview { app | channels = List.filter (\c -> c /= channel) app.channels } problem, Cmd.none )
 
-        WatchVideo video ->
-            ( { model | currentVideo = Just video }, scrollToTop )
+        ( WatchVideo video, Overview app problem ) ->
+            ( Watching app video, scrollToTop )
 
-        ExitVideo ->
-            ( { model | currentVideo = Nothing }, Cmd.none )
+        ( ExitVideo, Watching app video ) ->
+            ( Overview app Nothing, Cmd.none )
 
-        FinishVideo video ->
-            ( { model
-                | seenVideos = Set.insert video.id model.seenVideos
-                , currentVideo = Nothing
-              }
-            , Cmd.none
-            )
+        ( FinishVideo, Watching app video ) ->
+            ( Overview { app | channels = List.map (YouTube.markVideoAsSeen video.id) app.channels } Nothing, Cmd.none )
 
-        LoadedChannelId result ->
+        ( LoadedChannelId result, Watching app video ) ->
             case result of
                 Ok id ->
-                    ( model, getChannelInfo model.apiKey id )
+                    ( model, getChannelInfo app.apiKey id )
 
                 Err err ->
-                    ( { model | errorMsg = Just (httpErrorToString err) }, Cmd.none )
+                    ( model, Cmd.none )
 
-        LoadedChannelVideos result ->
+        ( LoadedChannelId result, Overview app problem ) ->
             case result of
-                Ok videos ->
-                    ( { model | videos = model.videos ++ videos }, Cmd.none )
+                Ok id ->
+                    ( model, getChannelInfo app.apiKey id )
 
                 Err err ->
-                    ( { model | errorMsg = Just (httpErrorToString err) }, Cmd.none )
+                    ( Overview app (Just (HttpError (httpErrorToString err))), Cmd.none )
 
-        LoadedChannelInfo result ->
+        ( LoadedChannelVideos result, Watching app video ) ->
             case result of
                 Ok channel ->
-                    if List.member channel model.channels then
-                        ( { model | errorMsg = Just ("Already subscribed to " ++ channel.title ++ ".") }, Cmd.none )
-
-                    else
-                        ( { model | channels = List.filter (\c -> c.id /= channel.id) model.channels ++ [ channel ] }, getChannelVideos model.apiKey model.seenVideos channel )
+                    ( Watching { app | channels = List.map (updateChannel channel) app.channels } video, Cmd.none )
 
                 Err err ->
-                    ( { model | errorMsg = Just (httpErrorToString err) }, Cmd.none )
+                    ( model, Cmd.none )
 
-        Scroll _ ->
+        ( LoadedChannelVideos result, Overview app problem ) ->
+            case result of
+                Ok channel ->
+                    ( Overview { app | channels = List.map (updateChannel (YouTube.updateVideosWithActivity app.activity channel)) app.channels } problem, Cmd.none )
+
+                Err err ->
+                    ( Overview app (Just (HttpError (httpErrorToString err))), Cmd.none )
+
+        ( LoadedChannelInfo result, Watching app video ) ->
+            case result of
+                Ok channel ->
+                    if List.member channel app.channels then
+                        ( model, Cmd.none )
+
+                    else
+                        ( Watching { app | channels = channel :: app.channels } video, getChannelVideos app.apiKey channel )
+
+                Err err ->
+                    ( model, Cmd.none )
+
+        ( LoadedChannelInfo result, Overview app problem ) ->
+            case result of
+                Ok channel ->
+                    if List.member channel app.channels then
+                        ( Overview app (Just (AlreadySubscribedError ("Already subscribed to " ++ channel.title ++ "."))), Cmd.none )
+
+                    else
+                        ( Overview { app | channels = channel :: app.channels } problem, getChannelVideos app.apiKey channel )
+
+                Err err ->
+                    ( Overview app (Just (HttpError (httpErrorToString err))), Cmd.none )
+
+        ( Scroll _, _ ) ->
             ( model, Cmd.none )
 
-        ClearError _ ->
-            ( { model | errorMsg = Nothing }, Cmd.none )
+        ( ClearError _, Overview app problem ) ->
+            ( Overview app Nothing, Cmd.none )
+
+        ( _, _ ) ->
+            ( model, Cmd.none )
+
+
+updateChannel : YouTube.Channel -> YouTube.Channel -> YouTube.Channel
+updateChannel new old =
+    if old.id == new.id then
+        new
+
+    else
+        old
 
 
 
@@ -180,12 +238,12 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.errorMsg of
-        Nothing ->
-            Sub.none
+    case model of
+        Overview app (Just _) ->
+            Time.every 50000 ClearError
 
-        Just _ ->
-            Time.every 5000 ClearError
+        _ ->
+            Sub.none
 
 
 
@@ -204,46 +262,27 @@ buildSearchUrl apiKey displayName =
         ]
 
 
-buildChannelUrl : String -> Channel.Id -> String
-buildChannelUrl apiKey (Channel.Id id) =
-    Url.Builder.crossOrigin
-        "https://www.googleapis.com"
-        [ "youtube", "v3", "channels" ]
-        [ Url.Builder.string "part" "contentDetails,snippet"
-        , Url.Builder.string "id" id
-        , Url.Builder.string "key" apiKey
-        ]
-
-
-buildPlaylistUrl : String -> String -> String
-buildPlaylistUrl apiKey playlistId =
-    Url.Builder.crossOrigin
-        "https://www.googleapis.com"
-        [ "youtube", "v3", "playlistItems" ]
-        [ Url.Builder.string "part" "snippet"
-        , Url.Builder.string "playlistId" playlistId
-        , Url.Builder.string "key" apiKey
-        , Url.Builder.int "maxResults" 3
-        ]
-
-
 
 -- HTTP
 
 
-getChannelVideos : String -> Set String -> Channel -> Cmd Msg
-getChannelVideos apiKey seenVideos channel =
+{-| Given a channel, get all the videos for the channel
+-}
+getChannelVideos : String -> YouTube.Channel -> Cmd Msg
+getChannelVideos apiKey channel =
     Http.get
-        { url = buildPlaylistUrl apiKey channel.uploadPlaylistId
-        , expect = Http.expectJson LoadedChannelVideos (videoListDecoder channel seenVideos)
+        { url = YouTube.buildPlaylistUrl apiKey channel.uploadPlaylistId
+        , expect =
+            Http.expectJson LoadedChannelVideos (YouTube.uploadedVideosApiDecoder channel)
         }
 
 
-getChannelInfo : String -> Channel.Id -> Cmd Msg
+{-| -}
+getChannelInfo : String -> YouTube.Id -> Cmd Msg
 getChannelInfo apiKey id =
     Http.get
-        { url = buildChannelUrl apiKey id
-        , expect = Http.expectJson LoadedChannelInfo (channelDecoder id)
+        { url = YouTube.buildChannelUrl apiKey id
+        , expect = Http.expectJson LoadedChannelInfo YouTube.channelApiDecoder
         }
 
 
@@ -251,7 +290,7 @@ getChannelId : String -> String -> Cmd Msg
 getChannelId apiKey displayName =
     Http.get
         { url = buildSearchUrl apiKey displayName
-        , expect = Http.expectJson LoadedChannelId searchDecoder
+        , expect = Http.expectJson LoadedChannelId YouTube.channelIdApiDecoder
         }
 
 
@@ -274,69 +313,6 @@ httpErrorToString err =
             msg
 
 
-publishDecoder : D.Decoder Time.Posix
-publishDecoder =
-    D.at [ "snippet", "publishedAt" ] Iso8601.decoder
-
-
-thumbnailDecoder : D.Decoder String
-thumbnailDecoder =
-    D.at [ "snippet", "thumbnails", "standard", "url" ] D.string
-
-
-idDecoder : D.Decoder String
-idDecoder =
-    D.at [ "snippet", "resourceId", "videoId" ] D.string
-
-
-titleDecoder : D.Decoder String
-titleDecoder =
-    D.at [ "snippet", "title" ] D.string
-
-
-descriptionDecoder : D.Decoder String
-descriptionDecoder =
-    D.at [ "snippet", "description" ] D.string
-
-
-videoDecoder : Channel -> (String -> Bool) -> D.Decoder Video
-videoDecoder channel isSeen =
-    D.map6 (Video channel)
-        idDecoder
-        publishDecoder
-        thumbnailDecoder
-        titleDecoder
-        descriptionDecoder
-        (D.map isSeen idDecoder)
-
-
-videoListDecoder : Channel -> Set String -> D.Decoder (List Video)
-videoListDecoder channel seenVideos =
-    D.field "items" (D.list (videoDecoder channel (\id -> Set.member id seenVideos)))
-
-
-channelTitleDecoder : D.Decoder String
-channelTitleDecoder =
-    D.field "items" <| D.index 0 <| D.at [ "snippet", "title" ] D.string
-
-
-uploadPlaylistIdDecoder : D.Decoder String
-uploadPlaylistIdDecoder =
-    D.field "items" <| D.index 0 <| D.at [ "contentDetails", "relatedPlaylists", "uploads" ] D.string
-
-
-channelDecoder : Channel.Id -> D.Decoder Channel
-channelDecoder id =
-    D.map2 (Channel id)
-        channelTitleDecoder
-        uploadPlaylistIdDecoder
-
-
-searchDecoder : D.Decoder Channel.Id
-searchDecoder =
-    D.field "items" <| D.map Channel.Id <| D.index 0 <| D.at [ "id", "channelId" ] D.string
-
-
 
 -- PORTS
 
@@ -345,64 +321,50 @@ port setStorage : E.Value -> Cmd msg
 
 
 updateWithStorage : Msg -> Model -> ( Model, Cmd Msg )
-updateWithStorage msg prevModel =
+updateWithStorage msg prev =
     let
-        ( newModel, cmds ) =
-            update msg prevModel
+        ( new, cmd ) =
+            update msg prev
     in
-    ( newModel
-    , Cmd.batch [ setStorage (encodeModel newModel), cmds ]
-    )
+    case new of
+        Overview app problem ->
+            ( new, Cmd.batch [ setStorage (encodeModel (storedModelFromApp app)), cmd ] )
+
+        _ ->
+            ( new, cmd )
 
 
 
 -- JSON ENCODE/DECODE
 
 
-encodeChannel : Channel -> E.Value
-encodeChannel channel =
-    let
-        (Channel.Id id) =
-            channel.id
-    in
-    E.object
-        [ ( "id", E.string id )
-        , ( "title", E.string channel.title )
-        , ( "uploadPlaylistId", E.string channel.uploadPlaylistId )
-        ]
-
-
-encodeVideo : Video -> E.Value
-encodeVideo video =
-    E.string video.id
-
-
-encodeModel : Model -> E.Value
+encodeModel : StoredModel -> E.Value
 encodeModel model =
     E.object
-        [ ( "channels", E.list encodeChannel model.channels )
-        , ( "seen", E.list encodeVideo (List.filter (isVideoSeen model.seenVideos) model.videos) )
+        [ ( "channels", E.list YouTube.encodeChannel model.channels )
+        , ( "seen", E.list YouTube.encodeVideoDefinition model.seen )
         , ( "apiKey", E.string model.apiKey )
         ]
 
 
-channelStorageDecoder : D.Decoder Channel
-channelStorageDecoder =
-    D.map3 Channel
-        (D.map Channel.Id <| D.field "id" D.string)
-        (D.field "title" D.string)
-        (D.field "uploadPlaylistId" D.string)
+storedModelHelper : YouTube.Channel -> List YouTube.Id -> YouTube.Channel
+storedModelHelper channel seen =
+    channel
 
 
-modelDecoder : D.Decoder Model
-modelDecoder =
-    D.map3 (Model [] Nothing "" Nothing)
-        (D.field "channels" (D.list channelStorageDecoder))
-        (D.map Set.fromList <| D.field "seen" <| D.list D.string)
+storedModelDecoder : D.Decoder StoredModel
+storedModelDecoder =
+    D.map3 StoredModel
         (D.field "apiKey" D.string)
+        (D.field "channels" <| D.list YouTube.channelStorageDecoder)
+        (D.field "seen" <| D.list YouTube.videoDefinitionDecoder)
 
 
 
+-- D.map3
+-- StoredModel
+-- (D.field "apiKey" D.string)
+-- (D.field "channels" <| D.list YouTube.channelStorageDecoder)
 -- VIEW
 
 
@@ -417,55 +379,101 @@ view model =
                 [ h1 [] [ Html.text "Channels" ]
                 , div
                     [ id "channel-list" ]
-                    (model.channels
-                        |> List.sortBy (.title >> String.toLower)
-                        |> List.map viewChannel
+                    (case model of
+                        Watching { channels } _ ->
+                            viewChannelList channels
+
+                        Overview { channels } _ ->
+                            viewChannelList channels
                     )
-                , form [ onSubmit AddChannel ]
-                    [ input [ type_ "text", name "url", placeholder "Channel URL", onInput UpdateNewChannel, value model.newChannelUrl ] []
+                , form
+                    [ Html.Events.onSubmit AddChannel ]
+                    [ input [ type_ "text", name "url", placeholder "Channel URL", Html.Events.onInput UpdateChannelUrl ] []
                     , input [ type_ "submit", value "Add Channel" ] []
                     ]
                 ]
             , main_
                 [ class
-                    (case model.currentVideo of
-                        Just _ ->
+                    (case model of
+                        Watching _ _ ->
                             "content blurred"
 
-                        Nothing ->
+                        _ ->
                             "content"
                     )
                 ]
                 [ h1 [] [ Html.text "Videos" ]
-                , viewErrorMsg model.errorMsg
+                , viewErrorMsg
+                    (case model of
+                        Overview _ problem ->
+                            problem
+
+                        _ ->
+                            Nothing
+                    )
                 , div [ id "video-list" ]
-                    (List.map
-                        (viewChannelColumn model.videos model.seenVideos)
-                        (List.sortBy (.title >> String.toLower) model.channels)
+                    (case model of
+                        Watching { channels } _ ->
+                            viewVideoList channels
+
+                        Overview { channels } _ ->
+                            viewVideoList channels
                     )
                 ]
+            , viewVideoPlayer
+                (case model of
+                    Watching app video ->
+                        Just video
+
+                    _ ->
+                        Nothing
+                )
             ]
-        , viewVideoPlayer model.currentVideo
         ]
 
 
-videoSrc : Video -> String
-videoSrc video =
-    -- https://www.youtube-nocookie.com/embed/ZPM_5xedVus
-    "https://www.youtube-nocookie.com/embed/" ++ video.id
+viewChannelList : List YouTube.Channel -> List (Html Msg)
+viewChannelList channels =
+    channels
+        |> List.sortBy (.title >> String.toLower)
+        |> List.map viewChannel
 
 
-viewErrorMsg : Maybe String -> Html Msg
-viewErrorMsg maybeMsg =
-    case maybeMsg of
+viewVideoList : List YouTube.Channel -> List (Html Msg)
+viewVideoList channels =
+    List.map
+        viewChannelColumn
+        (List.sortBy (.title >> String.toLower) channels)
+
+
+viewErrorMsg : Maybe Problem -> Html Msg
+viewErrorMsg maybeProblem =
+    case maybeProblem of
+        Just (StorageError msg) ->
+            Html.p [] [ Html.text ("Error in your local storage: " ++ msg) ]
+
+        Just (UrlParseError msg) ->
+            Html.p [] [ Html.text msg ]
+
+        Just (HttpError msg) ->
+            Html.p [] [ Html.text msg ]
+
+        Just (AlreadySubscribedError msg) ->
+            Html.p [] [ Html.text msg ]
+
         Nothing ->
             Html.text ""
 
-        Just msg ->
-            Html.p [ class "error-msg" ] [ Html.text msg ]
 
 
-viewVideoPlayer : Maybe Video -> Html Msg
+-- case maybeMsg of
+--     Nothing ->
+--         Html.text ""
+--     Just msg ->
+--         Html.p [ class "error-msg" ] [ Html.text msg ]
+
+
+viewVideoPlayer : Maybe YouTube.Video -> Html Msg
 viewVideoPlayer maybeVideo =
     case maybeVideo of
         Nothing ->
@@ -475,115 +483,50 @@ viewVideoPlayer maybeVideo =
             div [ id "video-player" ]
                 [ div [ class "aspect-ratio" ]
                     [ iframe
-                        [ src (videoSrc video)
+                        [ src (YouTube.src video)
                         , attribute "frameborder" "0"
                         , attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                         , attribute "allowfullscreen" "true"
                         ]
                         []
                     ]
-                , button [ onClick (FinishVideo video) ] [ Html.text "Finished" ]
-                , button [ onClick ExitVideo ] [ Html.text "Exit" ]
+                , button [ Html.Events.onClick FinishVideo ] [ Html.text "Finished" ]
+                , button [ Html.Events.onClick ExitVideo ] [ Html.text "Exit" ]
                 ]
 
 
-toEnglishMonth : Time.Month -> String
-toEnglishMonth month =
-    case month of
-        Time.Jan ->
-            "January"
-
-        Time.Feb ->
-            "February"
-
-        Time.Mar ->
-            "March"
-
-        Time.Apr ->
-            "April"
-
-        Time.May ->
-            "May"
-
-        Time.Jun ->
-            "June"
-
-        Time.Jul ->
-            "July"
-
-        Time.Aug ->
-            "August"
-
-        Time.Sep ->
-            "September"
-
-        Time.Oct ->
-            "October"
-
-        Time.Nov ->
-            "November"
-
-        Time.Dec ->
-            "December"
-
-
-toDateString : Time.Posix -> String
-toDateString date =
-    toEnglishMonth (Time.toMonth Time.utc date) ++ " " ++ String.fromInt (Time.toDay Time.utc date) ++ ", " ++ String.fromInt (Time.toYear Time.utc date)
-
-
-viewVideoThumbnail : Video -> Bool -> Html Msg
-viewVideoThumbnail video seen =
+viewVideoThumbnail : YouTube.Channel -> YouTube.Video -> Html Msg
+viewVideoThumbnail channel video =
     div
-        [ id ("video-" ++ video.id)
-        , class
-            (if seen then
+        [ class
+            (if video.seen then
                 "video-thumbnail seen"
 
              else
                 "video-thumbnail"
             )
-        , onClick (WatchVideo video)
+        , Html.Events.onClick (WatchVideo video)
         ]
-        [ img [ src video.thumbnailUrl ] []
+        [ img [ src video.thumbnail ] []
         , span [ class "video-title" ] [ Html.text video.title ]
-        , span [ class "video-channel" ] [ Html.text (video.channel.title ++ " (" ++ toDateString video.publishedAt ++ ")") ]
+        , span [ class "video-channel" ] [ Html.text (channel.title ++ " (" ++ YouTube.toDateString video.publishedAt ++ ")") ]
         ]
 
 
-viewChannel : Channel -> Html Msg
+viewChannel : YouTube.Channel -> Html Msg
 viewChannel channel =
     -- renders a channel
     div [ class "channel-name" ]
         [ span [] [ Html.text channel.title ]
-        , button [ onClick (RemoveChannel channel) ] [ Html.text "Remove" ]
+        , button [ Html.Events.onClick (RemoveChannel channel) ] [ Html.text "Remove" ]
         ]
 
 
-channelVideos : List Video -> Channel -> List Video
-channelVideos allVideos channel =
-    allVideos
-        |> List.filter (\v -> v.channel == channel)
-        |> List.sortBy (.publishedAt >> Time.posixToMillis)
-        |> List.reverse
-
-
-isVideoSeen : Set String -> Video -> Bool
-isVideoSeen seenVideos video =
-    Set.member video.id seenVideos
-
-
-viewChannelColumn : List Video -> Set String -> Channel -> Html Msg
-viewChannelColumn allVideos seenVideoIds channel =
-    let
-        videos =
-            channelVideos allVideos channel
-    in
+viewChannelColumn : YouTube.Channel -> Html Msg
+viewChannelColumn channel =
     div [ class ("channel-" ++ channel.title) ]
         (h2 [] [ Html.text channel.title ]
-            :: List.map2 viewVideoThumbnail
-                videos
-                (List.map (isVideoSeen seenVideoIds) videos)
+            :: List.map (viewVideoThumbnail channel) channel.videos
         )
 
 
@@ -595,3 +538,28 @@ viewChannelColumn allVideos seenVideoIds channel =
 scrollToTop : Cmd Msg
 scrollToTop =
     Task.attempt Scroll (Browser.Dom.setViewport 0 0)
+
+
+
+-- UTIL
+
+
+flatten : List (List a) -> List a
+flatten list =
+    list |> List.foldr (++) []
+
+
+{-| Removes all unique values from a list according to a equality function. Slow.
+-}
+unique : List a -> List a
+unique list =
+    case list of
+        [] ->
+            []
+
+        x :: xs ->
+            if List.member x xs then
+                unique xs
+
+            else
+                x :: unique xs
