@@ -1,4 +1,4 @@
-module YouTube exposing (Activity, Channel, Id, Url(..), Video, VideoDefinition, activityFromVideoDefinitions, buildChannelUrl, buildPlaylistUrl, channelApiDecoder, channelIdApiDecoder, channelStorageDecoder, encodeChannel, encodeId, encodeVideoDefinition, idDecoder, idFromUrl, makeDefinition, markVideoAsSeen, newActivity, parseChannelUrl, src, toDateString, updateVideosWithActivity, uploadedVideosApiDecoder, videoApiDecoder, videoDefinitionDecoder, videoSeen)
+module YouTube exposing (Activity, Channel, Id, Url(..), Video, VideoDefinition, activityFromVideoDefinitions, buildChannelUrl, buildPlaylistUrl, buildSearchUrl, channelApiDecoder, channelIdApiDecoder, channelStorageDecoder, encodeChannel, encodeId, encodeVideoDefinition, idDecoder, idFromUrl, makeDefinition, markVideoAsSeen, newActivity, parseChannelUrl, src, toDateString, updateVideosWithActivity, uploadedVideosApiDecoder, videoApiDecoder, videoDefinitionDecoder, videoSeen)
 
 import Dict exposing (Dict)
 import Iso8601
@@ -173,15 +173,6 @@ toDateString date =
     toEnglishMonth (Time.toMonth Time.utc date) ++ " " ++ String.fromInt (Time.toDay Time.utc date) ++ ", " ++ String.fromInt (Time.toYear Time.utc date)
 
 
-
--- channelVideos : List Video -> Channel.Channel -> List Video
--- channelVideos videos channel =
---     videos
---         |> List.filter (\(Video v) -> v.channel == channel)
---         |> List.sortBy (\(Video v) -> v.publishedAt |> Time.posixToMillis)
---         |> List.reverse
-
-
 encodeId : Id -> E.Value
 encodeId (Id i) =
     E.string i
@@ -242,12 +233,6 @@ uploadedVideosApiDecoder channel =
 videoDefinitionDecoder : D.Decoder VideoDefinition
 videoDefinitionDecoder =
     D.map2 VideoDefinition (D.field "id" idDecoder) (D.field "seen" D.bool)
-
-
-
--- videoDecoder : Channel -> (String -> Bool) -> D.Decoder LoadedVideo
--- videoDecoder channel isSeen =
---
 
 
 type Url
@@ -349,4 +334,16 @@ buildPlaylistUrl apiKey (Id playlistId) =
         , Url.Builder.string "playlistId" playlistId
         , Url.Builder.string "key" apiKey
         , Url.Builder.int "maxResults" 3
+        ]
+
+
+buildSearchUrl : String -> String -> String
+buildSearchUrl apiKey displayName =
+    Url.Builder.crossOrigin
+        "https://www.googleapis.com"
+        [ "youtube", "v3", "search" ]
+        [ Url.Builder.string "part" "snippet"
+        , Url.Builder.string "q" displayName
+        , Url.Builder.string "type" "channel"
+        , Url.Builder.string "key" apiKey
         ]

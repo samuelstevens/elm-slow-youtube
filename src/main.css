@@ -55,20 +55,12 @@ input[type="submit"]:hover {
 
 /* Thumbnails */
 
-#video-list {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-#video-list > div {
-  flex: 1;
-  max-width: 50%;
-  min-width: 30%;
-  min-width: 100px;
-}
-
 .video-thumbnail {
-  padding: 15px;
+  margin: auto;
+  padding-bottom: 6px;
+  margin-bottom: 24px;
+  max-width: min(640px, 100%);
+  box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
 }
 
 .video-thumbnail:hover {
@@ -77,17 +69,26 @@ input[type="submit"]:hover {
 
 .video-thumbnail > img {
   width: 100%;
+  /* 4:3 image, should be 16:9. We are modifying the image height, should it should go from 16:12 -> 12:9. The top and bottom need to remove 25%, or 12.5% from both top and bottom. */
+  clip-path: inset(12.5% 0 12.5% 0);
+
+  /* After cropping, we now need to go from */
+  margin-bottom: calc(-10%);
+  margin-top: -10%;
 }
 
 .video-thumbnail.seen > img {
   filter: brightness(50%) grayscale(50%);
 }
 
+.video-caption {
+  margin: 12px;
+}
+
 .video-title,
 .video-channel,
 .video-date {
   display: block;
-  font-size: 0.8em;
 }
 
 .video-title {

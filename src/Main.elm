@@ -240,26 +240,10 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     case model of
         Overview app (Just _) ->
-            Time.every 50000 ClearError
+            Time.every 5000 ClearError
 
         _ ->
             Sub.none
-
-
-
--- URL
-
-
-buildSearchUrl : String -> String -> String
-buildSearchUrl apiKey displayName =
-    Url.Builder.crossOrigin
-        "https://www.googleapis.com"
-        [ "youtube", "v3", "search" ]
-        [ Url.Builder.string "part" "snippet"
-        , Url.Builder.string "q" displayName
-        , Url.Builder.string "type" "channel"
-        , Url.Builder.string "key" apiKey
-        ]
 
 
 
@@ -277,7 +261,8 @@ getChannelVideos apiKey channel =
         }
 
 
-{-| -}
+{-| Given a channel id, get the playlist
+-}
 getChannelInfo : String -> YouTube.Id -> Cmd Msg
 getChannelInfo apiKey id =
     Http.get
@@ -289,7 +274,7 @@ getChannelInfo apiKey id =
 getChannelId : String -> String -> Cmd Msg
 getChannelId apiKey displayName =
     Http.get
-        { url = buildSearchUrl apiKey displayName
+        { url = YouTube.buildSearchUrl apiKey displayName
         , expect = Http.expectJson LoadedChannelId YouTube.channelIdApiDecoder
         }
 
@@ -347,25 +332,12 @@ encodeModel model =
         ]
 
 
-storedModelHelper : YouTube.Channel -> List YouTube.Id -> YouTube.Channel
-storedModelHelper channel seen =
-    channel
-
-
 storedModelDecoder : D.Decoder StoredModel
 storedModelDecoder =
     D.map3 StoredModel
         (D.field "apiKey" D.string)
         (D.field "channels" <| D.list YouTube.channelStorageDecoder)
         (D.field "seen" <| D.list YouTube.videoDefinitionDecoder)
-
-
-
--- D.map3
--- StoredModel
--- (D.field "apiKey" D.string)
--- (D.field "channels" <| D.list YouTube.channelStorageDecoder)
--- VIEW
 
 
 view : Model -> Browser.Document Msg
@@ -402,8 +374,7 @@ view model =
                             "content"
                     )
                 ]
-                [ h1 [] [ Html.text "Videos" ]
-                , viewErrorMsg
+                [ viewErrorMsg
                     (case model of
                         Overview _ problem ->
                             problem
@@ -439,11 +410,23 @@ viewChannelList channels =
         |> List.map viewChannel
 
 
+uncurry : (a -> b -> c) -> ( a, b ) -> c
+uncurry fn ( a, b ) =
+    fn a b
+
+
+videoList : YouTube.Channel -> List ( YouTube.Channel, YouTube.Video )
+videoList channel =
+    List.map (\v -> ( channel, v )) channel.videos
+
+
 viewVideoList : List YouTube.Channel -> List (Html Msg)
 viewVideoList channels =
-    List.map
-        viewChannelColumn
-        (List.sortBy (.title >> String.toLower) channels)
+    List.map videoList channels
+        |> flatten
+        |> List.sortBy (\( c, v ) -> Time.posixToMillis v.publishedAt)
+        |> List.reverse
+        |> List.map (uncurry viewVideoThumbnail)
 
 
 viewErrorMsg : Maybe Problem -> Html Msg
@@ -463,14 +446,6 @@ viewErrorMsg maybeProblem =
 
         Nothing ->
             Html.text ""
-
-
-
--- case maybeMsg of
---     Nothing ->
---         Html.text ""
---     Just msg ->
---         Html.p [ class "error-msg" ] [ Html.text msg ]
 
 
 viewVideoPlayer : Maybe YouTube.Video -> Html Msg
@@ -508,8 +483,10 @@ viewVideoThumbnail channel video =
         , Html.Events.onClick (WatchVideo video)
         ]
         [ img [ src video.thumbnail ] []
-        , span [ class "video-title" ] [ Html.text video.title ]
-        , span [ class "video-channel" ] [ Html.text (channel.title ++ " (" ++ YouTube.toDateString video.publishedAt ++ ")") ]
+        , div [ class "video-caption" ]
+            [ span [ class "video-title" ] [ Html.text video.title ]
+            , span [ class "video-channel" ] [ Html.text (channel.title ++ " (" ++ YouTube.toDateString video.publishedAt ++ ")") ]
+            ]
         ]
 
 
